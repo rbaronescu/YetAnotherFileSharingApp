@@ -5,6 +5,7 @@ package backend;
 
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +77,10 @@ public class YetAnotherFileSharingAppClient {
         
         try {
             
+            /* Sending the command to the server. */
+            String commandType = "getListOfRemoteFiles";
+            serverObjectOutputStream.writeObject(new Command(commandType, null));
+            
             /* Receiving number of remote files. */
             numberOfFiles = Integer.parseInt((String) serverObjectInputStream.readObject());
             
@@ -143,15 +148,16 @@ public class YetAnotherFileSharingAppClient {
             
             /* Start receveing the file. The downloaded data is written to fileOut. */
             File fileOut = new File(userHome, fileInName);
-            if (!fileOut.exists())
+            if (!fileOut.exists()) {
                 fileOut.createNewFile();
+            }
             
             InputStream in = serverInputStream;
             FileOutputStream out = new FileOutputStream(fileOut);
             
             long totalBytesToReceive = Long.parseLong(response);
+            long totalBytesReceived = 0;
             int bytesReceived = 0;
-            int totalBytesReceived = 0;
             while (totalBytesReceived < totalBytesToReceive) {
                 bytesReceived = in.read(receivedData);
                 out.write(receivedData, 0, bytesReceived);
@@ -167,6 +173,50 @@ public class YetAnotherFileSharingAppClient {
             Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
         } catch (ClassNotFoundException e) {
             Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        }
+        
+        return booleanRet;
+    }
+    
+    public boolean uploadFile(String fileName) {
+        
+        boolean booleanRet = false;
+        
+         /* Amount of data transfered between client and server. */
+        byte[] buf = new byte[transferLength];
+        
+        /* Opening and creating user home if it does not exist. */
+        File userHome = new File("data", username);
+        if (!userHome.exists()) {
+            return false;
+        }
+        
+        /* Opening the file to upload. */
+        File f = new File(userHome, fileName);
+        if (!f.exists()) {
+            return false;
+        }
+        
+        try {
+            
+            /* Sending command to server. */
+            String commandType = "upload";
+            String[] arguments = {fileName, String.valueOf(f.length())};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
+            
+            InputStream in = new FileInputStream(f);
+            OutputStream out = serverOutputStream;
+            
+            int bytesRead;
+            while((bytesRead = in.read(buf)) > 0) {
+                out.write(buf, 0, bytesRead);
+            }
+            
+            in.close();
+            booleanRet = true;
+            
+        } catch (IOException ex) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return booleanRet;

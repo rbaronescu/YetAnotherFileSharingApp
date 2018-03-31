@@ -14,6 +14,10 @@ public class Command implements Serializable {
     private String commandType;
     private String[] arguments;
 
+    public Command(String commandType) {
+        this.commandType = commandType;
+    }
+
     public Command(String commandType, String[] arguments) {
         this.commandType = commandType;
         this.arguments = arguments;
@@ -25,6 +29,10 @@ public class Command implements Serializable {
 
     public boolean isUpload() {
         return commandType.equals("upload");
+    }
+
+    public boolean isGetListOfRemoteFiles() {
+        return commandType.equals("getListOfRemoteFiles");
     }
 
     public String getArgument(int index) {

@@ -20,6 +20,10 @@ public class NewConnectionHandler extends Thread {
     /* 10 Mebibytes (the new Megabyte) */
     static final int transferLength = 8192;
 
+    /* All data on the server. */
+    static final String dataRootPath = "data";
+    static final String usersCsvFilePath = dataRootPath + "/users.csv";
+
     int clientId;
     Socket clientSocket;
     String username = "";
@@ -57,9 +61,6 @@ public class NewConnectionHandler extends Thread {
                 return;
             }
 
-            /* Sending list of his remote files. */
-            sendRemoteFilesOwnedByThisUser();
-
             Command userCommand;
             do {
                 userCommand = (Command) clientObjectInputStream.readObject();
@@ -76,15 +77,16 @@ public class NewConnectionHandler extends Thread {
     private void executeUserCommand(Command userCommand) {
 
         if (userCommand.isDownload()) {
-            executeDownload(userCommand.getArgument(0));
+            executeDownload(userCommand);
         } else if (userCommand.isUpload()) {
-            //executeUpload(userCommand.getArgument(0));
+            executeUpload(userCommand);
+        } else if (userCommand.isGetListOfRemoteFiles()) {
+            sendRemoteFilesOwnedByThisUser();
         }
     }
 
     private boolean login(String username, String password) {
 
-        String usersCsvFile = "data/users.csv";
         BufferedReader br = null;
         String line = "";
         String splitter = ",";
@@ -92,7 +94,7 @@ public class NewConnectionHandler extends Thread {
 
         try {
 
-            br = new BufferedReader(new FileReader(usersCsvFile));
+            br = new BufferedReader(new FileReader(usersCsvFilePath));
             while ((line = br.readLine()) != null) {
 
                 String[] credentials = line.split(splitter);
@@ -124,8 +126,7 @@ public class NewConnectionHandler extends Thread {
 
     private void sendRemoteFilesOwnedByThisUser() {
 
-        File homeDirectory = new File("data");
-        File userHome = new File(homeDirectory, username);
+        File userHome = new File(dataRootPath, username);
         ArrayList<String> fileNames = new ArrayList<>(Arrays.asList(userHome.list()));
 
         try {
@@ -142,10 +143,11 @@ public class NewConnectionHandler extends Thread {
         }
     }
 
-    private void executeDownload(String fileName) {
+    private void executeDownload(Command command) {
 
         byte[] buf = new byte[transferLength];
-        File f = new File("data/" + username, fileName);
+        File userHome = new File(dataRootPath, username);
+        File f = new File(userHome, command.getArgument(0));
 
         try {
             if (!f.exists()) {
@@ -163,6 +165,43 @@ public class NewConnectionHandler extends Thread {
             }
 
             in.close();
+
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void executeUpload(Command command) {
+
+        /* Amount of data transfered between client and server. */
+        byte[] receivedData = new byte[transferLength];
+
+        /* User home must exist, it is created upon registration. */
+        File userHome = new File(dataRootPath, username);
+
+        try {
+
+            /* Start receveing the file. The received data is written to fileOut. */
+            File fileOut = new File(userHome, command.getArgument(0));
+            if (!fileOut.exists()) {
+                fileOut.createNewFile();
+            }
+
+            InputStream in = clientInputStream;
+            FileOutputStream out = new FileOutputStream(fileOut);
+
+            long totalBytesToReceive = Long.parseLong(command.getArgument(1));
+            long totalBytesReceived = 0;
+            int bytesReceived = 0;
+            while (totalBytesReceived < totalBytesToReceive) {
+                bytesReceived = in.read(receivedData);
+                out.write(receivedData, 0, bytesReceived);
+                totalBytesReceived += bytesReceived;
+            }
+
+            out.close();
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.INFO,
+                    "File " + command.getArgument(0) + "received!");
 
         } catch (IOException e) {
             Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
