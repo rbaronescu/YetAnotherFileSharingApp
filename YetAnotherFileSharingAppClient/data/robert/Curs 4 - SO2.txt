@@ -1,0 +1,22 @@
+Curs 4 - SO2
+
+Un INODE, reprezinta un fisier dpdv al sistemului de fisiere, atributele unui inode sunt: dimensiunea, drepturile, timpii asociati fisierului. Un INODE, identifica in mod unic un fisier intr-un sistem de fisiere.
+Structura "file", reprezinta tot un fisier, dar mai aproape de punctul de vedere al unui utilizator care a deschis fisierul,
+deci contine atribute ce descriu starea de fisier deschis: inode-ul, numele fisierului, atributele de deschidere ale fisierului, pozititia curenta a cursorului in fisier.
+Toate fisierele deschise la un moment dat, au asociate  structura file, care sunt stocate intr-o tabela pentru fiecare proces, file descriptor-ul este un index in aceasta tabela.
+Daca consideram inode-ul ca fiind o clasa, atunci file-ul (structura) este o instanta a acestei clase.
+Inode-ul reprezinta o imagine statica a fisierului (nu are stare), file reprezinta imagine dinamica a fisierului (are stare).
+
+Top Halves vs. Bottom Halves:
+Teoretic, cand se primeste un pachet pe interfata de retea, network-card da un interrupt, si handlerul ar trebui sa raspunda hardwarului, sa copieze pachetul din bufferul netowrk cardului in rma, sa procesez pachetul si sa impinga pachetul down to the apropriate protocol stack or application. E din ce in ce mai multa munca de facut cu noile gigabit si 10-gigabit Ethernet cards.
+In TOP HALVE, se face doar ce e critic, acknowledge to the hardware(network card in this case) si copierea din bufferul cardului in main memory, pentru ca bufferul este foarte mic si s-ar umple repde. Cellelaltet doua pot fi facute mai tarziu, asfel this work is DEFFERED until the BOTTOM HALF.
+Top half - ruleaza cu intreruperile disablate.
+Bottom half - ruleaza cu intreruperile enablate.
+
+The interrupt handler can be marked static because it is not called directly from another file.
+Interrupt handlers in Linux need not be reentrant. When a given interrupt handler is executing, the corresponndig interrupt line is masked out on all processors. Normally, all other interrupts are enabled. Deci, the same interrupt handler is never invoked concurrently to service a nested interrupt. This greatly simplifies writing your interrupt handler.
+
+Without a backing process(interrupt handles doesn't have a task_struct associated), interrupt handlers run in interrupt context, so, interrupt context cannot sleep--how would it ever reschedule??
+
+Kernel stack is two pages in size, tipically that's 8KB on 32-bit architectures and 16KB on 64-bit architectures.
+In the 2.6 Kernel process, an option was added to reduce the stack size from two pages down to one, providing only a 4KB on 32-bit systems. Memory pressure was reduced, pentru ca inainte toate procesele aveau nevoie 2 pagini de contiguous, nonswappable kernel memory. To cope with the reduced stack size, interrupt handlers were given their own stack, one stack per processor, one page in size (called INTERRUPT STACK).

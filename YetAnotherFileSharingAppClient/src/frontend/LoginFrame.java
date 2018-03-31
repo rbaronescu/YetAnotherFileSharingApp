@@ -126,9 +126,11 @@ public class LoginFrame extends javax.swing.JFrame {
         if (clientInstance.handleClientLogin(usernameTxt.getText(), passwordTxt.getText())) {
             this.dispose();
             (new MainFrame(clientInstance)).setVisible(true);
-            JOptionPane.showMessageDialog(new JFrame(), "Hi, " + usernameTxt.getText() + "!");
+            JOptionPane.showMessageDialog(new JFrame(), "Hi, " + usernameTxt.getText() + "!", "Information!",
+                    JOptionPane.INFORMATION_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(new JFrame(), "Invalid Username / Password! Try again.");
+            JOptionPane.showMessageDialog(new JFrame(), "Invalid Username / Password! Try again.", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_loginBtnActionPerformed
 

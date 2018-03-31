@@ -77,8 +77,6 @@ public class NewConnectionHandler extends Thread {
 
         if (userCommand.isDownload()) {
             executeDownload(userCommand.getArgument(0));
-        } else if (userCommand.isUpload()) {
-            //executeUpload(userCommand.getArgument(0));
         }
     }
 
@@ -124,8 +122,8 @@ public class NewConnectionHandler extends Thread {
 
     private void sendRemoteFilesOwnedByThisUser() {
 
-        File homeDirectory = new File("data");
-        File userHome = new File(homeDirectory, username);
+        String userHomePath = "data/" + username;
+        File userHome = new File(userHomePath);
         ArrayList<String> fileNames = new ArrayList<>(Arrays.asList(userHome.list()));
 
         try {
@@ -145,13 +143,13 @@ public class NewConnectionHandler extends Thread {
     private void executeDownload(String fileName) {
 
         byte[] buf = new byte[transferLength];
-        File f = new File("data/" + username, fileName);
+        File f = new File(username, fileName);
 
         try {
             if (!f.exists()) {
                 clientObjectOutputStream.writeObject("file not found");
             } else {
-                clientObjectOutputStream.writeObject(String.valueOf(f.length()));
+                clientObjectOutputStream.writeObject("download command received");
             }
 
             InputStream in = new FileInputStream(f);

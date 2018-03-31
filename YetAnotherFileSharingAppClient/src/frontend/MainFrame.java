@@ -6,6 +6,8 @@
 package frontend;
 
 import backend.YetAnotherFileSharingAppClient;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -257,7 +259,21 @@ public class MainFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void pullSelectedFileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullSelectedFileBtnActionPerformed
+        if (remoteFilesLst.getSelectedIndex() == -1) {
+            JOptionPane.showMessageDialog(new JFrame(), "No remote file selected!", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         
+        String fileName = remoteFilesLst.getSelectedValue();
+        if (clientInstance.downloadFile(fileName)) {
+            JOptionPane.showMessageDialog(new JFrame(), "File " + fileName + " downloaded successfully!",
+                    "Information!", JOptionPane.INFORMATION_MESSAGE);
+            updateListOfLocalFiles();
+        } else {
+            JOptionPane.showMessageDialog(new JFrame(), "Remote file doesn't exist!", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_pullSelectedFileBtnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

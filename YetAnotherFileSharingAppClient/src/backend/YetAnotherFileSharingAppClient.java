@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 public class YetAnotherFileSharingAppClient {
     
     /* 10 Mebibytes (the new Megabyte) */
-    static final int transferLength = 10490000;
+    static final int transferLength = 8192;
     
     String username = "";
     Socket socket;
@@ -118,12 +118,13 @@ public class YetAnotherFileSharingAppClient {
     public boolean downloadFile(String fileInName) {
         
         String response = "";
+        boolean booleanRet = false;
         
         /* Amount of data transfered between client and server. */
         byte[] receivedData = new byte[transferLength];
         
         /* Opening and creating user home if it does not exist. */
-        File userHome = new File(username);
+        File userHome = new File("data", username);
         if (!userHome.exists()) {
             userHome.mkdir();
         }
@@ -142,17 +143,32 @@ public class YetAnotherFileSharingAppClient {
             
             /* Start receveing the file. The downloaded data is written to fileOut. */
             File fileOut = new File(userHome, fileInName);
-            DataOutputStream dataOut = new DataOutputStream(new FileOutputStream(fileOut));
+            if (!fileOut.exists())
+                fileOut.createNewFile();
             
+            InputStream in = serverInputStream;
+            FileOutputStream out = new FileOutputStream(fileOut);
             
+            long totalBytesToReceive = Long.parseLong(response);
+            int bytesReceived = 0;
+            int totalBytesReceived = 0;
+            while (totalBytesReceived < totalBytesToReceive) {
+                bytesReceived = in.read(receivedData);
+                out.write(receivedData, 0, bytesReceived);
+                totalBytesReceived += bytesReceived;
+            }
             
+            out.close();
+            booleanRet = true;
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.INFO,
+                    "File " + fileInName + "received!");
             
-        } catch (IOException ex) {
-            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        } catch (ClassNotFoundException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
         }
         
-        return false;
+        return booleanRet;
     }
 }
