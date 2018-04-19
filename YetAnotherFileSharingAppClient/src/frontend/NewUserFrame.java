@@ -3,16 +3,22 @@
  */
 package frontend;
 
+import javax.swing.JFrame;
+
 /**
  *
- * @author baronesc
+ * @author Robert Baronescu
  */
 public class NewUserFrame extends javax.swing.JFrame {
 
-    /**
+    JFrame parent;
+    
+    /*
      * Creates new form NewUserFrame
      */
-    public NewUserFrame() {
+    public NewUserFrame(JFrame parent) {
+        
+        this.parent = parent;
         initComponents();
     }
 
@@ -35,6 +41,12 @@ public class NewUserFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("YetAnotherFileSharingApp");
+        setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+        });
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Welcome to YetAnotherFileSharingApp!"));
 
@@ -106,6 +118,11 @@ public class NewUserFrame extends javax.swing.JFrame {
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        this.parent.setEnabled(true);
+        this.parent.toFront();
+    }//GEN-LAST:event_formWindowClosed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton2;

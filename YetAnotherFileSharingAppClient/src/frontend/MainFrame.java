@@ -4,10 +4,12 @@
 package frontend;
 
 import backend.YetAnotherFileSharingAppClient;
+import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -47,13 +49,15 @@ public class MainFrame extends javax.swing.JFrame {
         listFilesPopUpMnu = new javax.swing.JPopupMenu();
         openFileMnuItm = new javax.swing.JMenuItem();
         deleteFileMnuItm = new javax.swing.JMenuItem();
+        fileChooser = new javax.swing.JFileChooser();
         mainPnl = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         remoteFilesLst = new javax.swing.JList<>();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
+        fileMnu = new javax.swing.JMenu();
+        newFileMnuItm = new javax.swing.JMenuItem();
+        uploadFileMnuItm = new javax.swing.JMenuItem();
+        exitMnuItm = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
 
         openFileMnuItm.setText("Open File");
@@ -65,10 +69,20 @@ public class MainFrame extends javax.swing.JFrame {
         listFilesPopUpMnu.add(openFileMnuItm);
 
         deleteFileMnuItm.setText("Remove File");
+        deleteFileMnuItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteFileMnuItmActionPerformed(evt);
+            }
+        });
         listFilesPopUpMnu.add(deleteFileMnuItm);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("YetAnotherFileSharingApp");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowActivated(java.awt.event.WindowEvent evt) {
+                formWindowActivated(evt);
+            }
+        });
 
         mainPnl.setBorder(javax.swing.BorderFactory.createTitledBorder("All your files"));
 
@@ -99,15 +113,33 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jMenu1.setText("File");
+        fileMnu.setText("File");
 
-        jMenuItem1.setText("New File");
-        jMenu1.add(jMenuItem1);
+        newFileMnuItm.setText("New Empty File");
+        newFileMnuItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newFileMnuItmActionPerformed(evt);
+            }
+        });
+        fileMnu.add(newFileMnuItm);
 
-        jMenuItem2.setText("Upload File");
-        jMenu1.add(jMenuItem2);
+        uploadFileMnuItm.setText("Upload Existing File");
+        uploadFileMnuItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                uploadFileMnuItmActionPerformed(evt);
+            }
+        });
+        fileMnu.add(uploadFileMnuItm);
 
-        jMenuBar1.add(jMenu1);
+        exitMnuItm.setText("Exit");
+        exitMnuItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitMnuItmActionPerformed(evt);
+            }
+        });
+        fileMnu.add(exitMnuItm);
+
+        jMenuBar1.add(fileMnu);
 
         jMenu2.setText("Edit");
         jMenuBar1.add(jMenu2);
@@ -147,25 +179,9 @@ public class MainFrame extends javax.swing.JFrame {
             return;
         
         String fileName = remoteFilesLst.getSelectedValue();
-        File tempFile = clientInstance.downloadFile(fileName);
-        if (tempFile == null) {
-            JOptionPane.showMessageDialog(new JFrame(), "Remote file doesn't exist!", "Error!",
+        if (!clientInstance.editRemoteFile(fileName)) {
+            JOptionPane.showMessageDialog(new JFrame(), "Remote file could not be opened!", "Error!",
                     JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        try {
-            /* Opening file for edit and wait for it to be closed. */
-            String[] cmd = {"cmd.exe", "/C", "start /wait \"", tempFile.getPath(), "\""};
-            Process p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();
-            clientInstance.uploadAndRemoveFile(tempFile);
-            JOptionPane.showMessageDialog(new JFrame(), "File succesfully modified.", "Info",
-                JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_remoteFilesLstMouseClicked
 
@@ -174,46 +190,80 @@ public class MainFrame extends javax.swing.JFrame {
         remoteFilesLst.setSelectedIndex(remoteFilesLst.locationToIndex(evt.getPoint()));
         
         if (evt.isPopupTrigger()) {
-            listFilesPopUpMnu.show(this, evt.getX() + 36, evt.getY() + 75);
+            listFilesPopUpMnu.show(this, evt.getX() + 36, evt.getY() + 90);
         }
     }//GEN-LAST:event_remoteFilesLstMouseReleased
 
     private void openFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileMnuItmActionPerformed
-        String fileName = remoteFilesLst.getSelectedValue();
-        File tempFile = clientInstance.downloadFile(fileName);
-        if (tempFile == null) {
-            JOptionPane.showMessageDialog(new JFrame(), "Remote file doesn't exist!", "Error!",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
         
-        try {
-            /* Opening file for edit and wait for it to be closed. */
-            String[] cmd = {"cmd.exe", "/C", "start /wait \"", tempFile.getPath(), "\""};
-            Process p = Runtime.getRuntime().exec(cmd);
-            listFilesPopUpMnu.setVisible(false);
-            p.waitFor();
-            clientInstance.uploadAndRemoveFile(tempFile);
-            JOptionPane.showMessageDialog(new JFrame(), "File succesfully modified.", "Info",
-                JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        String fileName = remoteFilesLst.getSelectedValue();
+        
+        if (!clientInstance.editRemoteFile(fileName)) {
+            JOptionPane.showMessageDialog(new JFrame(), "Remote file could not be openend!", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_openFileMnuItmActionPerformed
 
+    private void exitMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMnuItmActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_exitMnuItmActionPerformed
+
+    private void newFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileMnuItmActionPerformed
+        
+        (new NewEmptyFileFrame(this, clientInstance)).setVisible(true);
+        this.setEnabled(false);
+    }//GEN-LAST:event_newFileMnuItmActionPerformed
+
+    private void deleteFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteFileMnuItmActionPerformed
+        
+        String fileName = remoteFilesLst.getSelectedValue();
+        
+        if (!clientInstance.removeFile(fileName)) {
+            JOptionPane.showMessageDialog(new JFrame(), "Remote file does not exist!", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        
+        updateListOfRemoteFiles();
+    }//GEN-LAST:event_deleteFileMnuItmActionPerformed
+
+    private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
+        
+        updateListOfRemoteFiles();
+    }//GEN-LAST:event_formWindowActivated
+
+    private void uploadFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadFileMnuItmActionPerformed
+        
+        int retVal = fileChooser.showOpenDialog(this);
+        
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            
+            File f = fileChooser.getSelectedFile();
+            if (clientInstance.uploadFile(f)) {
+                JOptionPane.showMessageDialog(new JFrame(), "File uploaded succesfully.", "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(new JFrame(), "Error uploading file!", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+            
+            updateListOfRemoteFiles();
+        }
+        
+    }//GEN-LAST:event_uploadFileMnuItmActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem deleteFileMnuItm;
-    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuItem exitMnuItm;
+    private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JMenu fileMnu;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu listFilesPopUpMnu;
     private javax.swing.JPanel mainPnl;
+    private javax.swing.JMenuItem newFileMnuItm;
     private javax.swing.JMenuItem openFileMnuItm;
     private javax.swing.JList<String> remoteFilesLst;
+    private javax.swing.JMenuItem uploadFileMnuItm;
     // End of variables declaration//GEN-END:variables
 }

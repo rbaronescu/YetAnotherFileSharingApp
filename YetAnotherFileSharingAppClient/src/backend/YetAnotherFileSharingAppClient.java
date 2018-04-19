@@ -3,7 +3,6 @@
  */
 package backend;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -13,7 +12,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +23,7 @@ import java.util.logging.Logger;
 public class YetAnotherFileSharingAppClient {
     
     /* 10 Mebibytes (the new Megabyte) */
-    static final int transferLength = 8192;
+    static final int TRANSFER_LENGTH = 8192;
     
     String username = "";
     Socket socket;
@@ -91,22 +89,22 @@ public class YetAnotherFileSharingAppClient {
             
             Arrays.sort(fileNames);
             
-        } catch (IOException ex) {
-            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        } catch (ClassNotFoundException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
         }
         
         return fileNames;
     }
     
-    public File downloadFile(String fileInName) {
+    public boolean downloadFile(String fileInName) {
         
-        String response = "";
-        File fileRet = null;
+        String response;
+        boolean booleanRet = false;
         
         /* Amount of data transfered between client and server. */
-        byte[] receivedData = new byte[transferLength];
+        byte[] receivedData = new byte[TRANSFER_LENGTH];
         
         /* Opening and creating user home if it does not exist. */
         File userHome = new File("data", username);
@@ -123,7 +121,7 @@ public class YetAnotherFileSharingAppClient {
             
             response = (String) serverObjectInputStream.readObject();
             if (response.equals("file not found")) {
-                return null;
+                return false;
             }
             
             /* Start receveing the file. The downloaded data is written to fileOut. */
@@ -145,17 +143,47 @@ public class YetAnotherFileSharingAppClient {
             }
             
             out.close();
-            fileRet = fileOut;
+            booleanRet = true;
             Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.INFO,
-                    "File " + fileInName + "received!");
+                    "File {0}received!", fileInName);
             
-        } catch (IOException e) {
-            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
         }
         
-        return fileRet;
+        return booleanRet;
+    }
+    
+    public boolean uploadFile(File f) {
+        
+        boolean booleanRet = false;
+        
+         /* Amount of data transfered between client and server. */
+        byte[] buf = new byte[TRANSFER_LENGTH];
+        
+        try {
+            
+            /* Sending command to server. */
+            String commandType = "upload";
+            String[] arguments = {f.getName(), String.valueOf(f.length())};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
+            
+            InputStream in = new FileInputStream(f);
+            OutputStream out = serverOutputStream;
+            
+            int bytesRead;
+            while((bytesRead = in.read(buf)) > 0) {
+                out.write(buf, 0, bytesRead);
+            }
+            
+            in.close();
+            booleanRet = true;
+            
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        }
+        
+        return booleanRet;
     }
     
     public boolean uploadFile(String fileName) {
@@ -163,7 +191,7 @@ public class YetAnotherFileSharingAppClient {
         boolean booleanRet = false;
         
          /* Amount of data transfered between client and server. */
-        byte[] buf = new byte[transferLength];
+        byte[] buf = new byte[TRANSFER_LENGTH];
         
         /* Opening and creating user home if it does not exist. */
         File userHome = new File("data", username);
@@ -195,22 +223,89 @@ public class YetAnotherFileSharingAppClient {
             in.close();
             booleanRet = true;
             
-        } catch (IOException ex) {
-            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
         }
         
         return booleanRet;
     }
     
-    public boolean uploadAndRemoveFile(File file) {
+    public boolean editRemoteFile(String fileName) {
         
+        /* Downloading file for editing. */
+        if (!downloadFile(fileName)) {
+            return false;
+        }
+        
+        /* Opening user home directory. */
+        File userHome = new File("data", username);
+        if (!userHome.exists()) {
+            return false;
+        }
+        
+        /* Opening download file. */
+        File file = new File(userHome, fileName);
+        if (!file.exists()) {
+            return false;
+        }
+        
+        /* Opening file in editor and wait for it to be closed. */
+        try {
+            String[] cmd = {"cmd.exe", "/C", "start /wait \"", file.getPath(), "\""};
+            Process p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();
+        } catch (IOException | InterruptedException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        }
+        
+        /* Uploading modifications in file. */
         if (!this.uploadFile(file.getName()))
             return false;
         
-        if (!file.delete())
-            return false;
+        /* Deleting local file. */
+        return file.delete();
+    }
+    
+    public boolean removeFile(String fileName) {
         
-        return true;
+        String response;
         
+        try {
+            
+            /* Telling the server, the command that the client wants. */
+            String commandType = "removeFile";
+            String[] arguments = {fileName};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
+            
+            response = (String) serverObjectInputStream.readObject();
+            if (!response.equals("file not found")) {
+                return true;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        }
+        
+        return false;
+    }
+    
+    public boolean newEmptyFile(String fileName) {
+        
+        String response;
+        
+        try {
+            
+            String commandType = "newEmptyFile";
+            String[] arguments = {fileName};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
+            
+            response = (String) serverObjectInputStream.readObject();
+            if (response.equals("success"))
+                return true;
+            
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        }
+        
+        return false;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * YetAnotherFileSharingAppClient - The client side.
+ * YetAnotherFileSharingAppClient - The server side.
  */
 package backend;
 
@@ -29,6 +29,14 @@ public class Command implements Serializable {
 
     public boolean isUpload() {
         return commandType.equals("upload");
+    }
+
+    public boolean isRemoveFile() {
+        return commandType.equals("removeFile");
+    }
+
+    public boolean isNewEmptyFile() {
+        return commandType.equals("newEmptyFile");
     }
 
     public boolean isGetListOfRemoteFiles() {

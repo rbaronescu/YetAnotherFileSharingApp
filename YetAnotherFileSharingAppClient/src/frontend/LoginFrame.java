@@ -4,12 +4,13 @@
 package frontend;
 
 import backend.YetAnotherFileSharingAppClient;
+import java.awt.event.KeyEvent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
  *
- * @author baronesc
+ * @author Robert Baronescu
  */
 public class LoginFrame extends javax.swing.JFrame {
 
@@ -39,6 +40,11 @@ public class LoginFrame extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("YetAnotherFileSharingApp");
         setResizable(false);
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                formKeyPressed(evt);
+            }
+        });
 
         LoginPnl.setBorder(javax.swing.BorderFactory.createTitledBorder("Welcome, please tipe in your Login info!"));
 
@@ -46,14 +52,35 @@ public class LoginFrame extends javax.swing.JFrame {
 
         passwordLbl.setText("Password:");
 
+        passwordTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                passwordTxtKeyPressed(evt);
+            }
+        });
+
         loginBtn.setText("Login");
         loginBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loginBtnActionPerformed(evt);
             }
         });
+        loginBtn.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                loginBtnKeyPressed(evt);
+            }
+        });
 
         newUserBtn.setText("New User");
+        newUserBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newUserBtnActionPerformed(evt);
+            }
+        });
+        newUserBtn.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                newUserBtnKeyPressed(evt);
+            }
+        });
 
         javax.swing.GroupLayout LoginPnlLayout = new javax.swing.GroupLayout(LoginPnl);
         LoginPnl.setLayout(LoginPnlLayout);
@@ -131,6 +158,37 @@ public class LoginFrame extends javax.swing.JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_loginBtnActionPerformed
+
+    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
+
+    }//GEN-LAST:event_formKeyPressed
+
+    private void passwordTxtKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordTxtKeyPressed
+        
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            this.loginBtnActionPerformed(null);
+        }
+    }//GEN-LAST:event_passwordTxtKeyPressed
+
+    private void loginBtnKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_loginBtnKeyPressed
+        
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            this.loginBtnActionPerformed(null);
+        }
+    }//GEN-LAST:event_loginBtnKeyPressed
+
+    private void newUserBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newUserBtnActionPerformed
+        
+        (new NewUserFrame(this)).setVisible(true);
+        this.setEnabled(false);
+    }//GEN-LAST:event_newUserBtnActionPerformed
+
+    private void newUserBtnKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_newUserBtnKeyPressed
+        
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            this.newUserBtnActionPerformed(null);
+        }
+    }//GEN-LAST:event_newUserBtnKeyPressed
 
     /**
      * @param args the command line arguments

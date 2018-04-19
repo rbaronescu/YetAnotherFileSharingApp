@@ -21,8 +21,8 @@ public class NewConnectionHandler extends Thread {
     static final int transferLength = 8192;
 
     /* All data on the server. */
-    static final String dataRootPath = "data";
-    static final String usersCsvFilePath = dataRootPath + "/users.csv";
+    private static final String DATA_ROOT_PATH = "data";
+    static final String USERS_CSV_FILE_PATH = DATA_ROOT_PATH + "/users.csv";
 
     int clientId;
     Socket clientSocket;
@@ -67,9 +67,7 @@ public class NewConnectionHandler extends Thread {
                 executeUserCommand(userCommand);
             } while (userCommand != null);
 
-        } catch (IOException e) {
-            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
         }
     }
@@ -82,6 +80,10 @@ public class NewConnectionHandler extends Thread {
             executeUpload(userCommand);
         } else if (userCommand.isGetListOfRemoteFiles()) {
             sendRemoteFilesOwnedByThisUser();
+        } else if (userCommand.isRemoveFile()) {
+            removeFile(userCommand);
+        } else if (userCommand.isNewEmptyFile()) {
+            newEmptyFile(userCommand);
         }
     }
 
@@ -94,7 +96,7 @@ public class NewConnectionHandler extends Thread {
 
         try {
 
-            br = new BufferedReader(new FileReader(usersCsvFilePath));
+            br = new BufferedReader(new FileReader(USERS_CSV_FILE_PATH));
             while ((line = br.readLine()) != null) {
 
                 String[] credentials = line.split(splitter);
@@ -126,7 +128,7 @@ public class NewConnectionHandler extends Thread {
 
     private void sendRemoteFilesOwnedByThisUser() {
 
-        File userHome = new File(dataRootPath, username);
+        File userHome = new File(DATA_ROOT_PATH, username);
         ArrayList<String> fileNames = new ArrayList<>(Arrays.asList(userHome.list()));
 
         try {
@@ -146,7 +148,7 @@ public class NewConnectionHandler extends Thread {
     private void executeDownload(Command command) {
 
         byte[] buf = new byte[transferLength];
-        File userHome = new File(dataRootPath, username);
+        File userHome = new File(DATA_ROOT_PATH, username);
         File f = new File(userHome, command.getArgument(0));
 
         try {
@@ -177,7 +179,7 @@ public class NewConnectionHandler extends Thread {
         byte[] receivedData = new byte[transferLength];
 
         /* User home must exist, it is created upon registration. */
-        File userHome = new File(dataRootPath, username);
+        File userHome = new File(DATA_ROOT_PATH, username);
 
         try {
 
@@ -205,6 +207,47 @@ public class NewConnectionHandler extends Thread {
 
         } catch (IOException e) {
             Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void removeFile(Command command) {
+
+        /* User home must exist, it is created upon registration. */
+        File userHome = new File(DATA_ROOT_PATH, username);
+
+        /* Opening the file to remove. */
+        File f = new File(userHome, command.getArgument(0));
+
+        try {
+            if (!f.exists()) {
+                clientObjectOutputStream.writeObject("file not found");
+                return;
+            }
+
+            f.delete();
+            clientObjectOutputStream.writeObject("success");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void newEmptyFile(Command command) {
+
+        /* User home must exist, it is created upon registration. */
+        File userHome = new File(DATA_ROOT_PATH, username);
+        File f = new File(userHome, command.getArgument(0));
+
+        try {
+
+            if (f.createNewFile()) {
+                clientObjectOutputStream.writeObject("success");
+            } else {
+                clientObjectOutputStream.writeObject("file exists");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
