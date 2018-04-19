@@ -99,31 +99,11 @@ public class YetAnotherFileSharingAppClient {
         
         return fileNames;
     }
-
-    public String[] getLocalFilesInfo() {
-
-        String localUserHomePath = "data/" + username;
-        File localUserHome = new File(localUserHomePath);
-        
-        if (!localUserHome.exists())
-            return new String[0];
-        
-        ArrayList<String> localFileNames = new ArrayList<>(Arrays.asList(localUserHome.list()));
-        String[] fileNamesArray = new String[localFileNames.size()];
-
-        for (int i = 0; i < localFileNames.size(); i++) {
-            fileNamesArray[i] = localFileNames.get(i);
-        }
-
-        Arrays.sort(fileNamesArray);
-
-        return fileNamesArray;
-    }
     
-    public boolean downloadFile(String fileInName) {
+    public File downloadFile(String fileInName) {
         
         String response = "";
-        boolean booleanRet = false;
+        File fileRet = null;
         
         /* Amount of data transfered between client and server. */
         byte[] receivedData = new byte[transferLength];
@@ -143,7 +123,7 @@ public class YetAnotherFileSharingAppClient {
             
             response = (String) serverObjectInputStream.readObject();
             if (response.equals("file not found")) {
-                return false;
+                return null;
             }
             
             /* Start receveing the file. The downloaded data is written to fileOut. */
@@ -165,7 +145,7 @@ public class YetAnotherFileSharingAppClient {
             }
             
             out.close();
-            booleanRet = true;
+            fileRet = fileOut;
             Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.INFO,
                     "File " + fileInName + "received!");
             
@@ -175,7 +155,7 @@ public class YetAnotherFileSharingAppClient {
             Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
         }
         
-        return booleanRet;
+        return fileRet;
     }
     
     public boolean uploadFile(String fileName) {
@@ -220,5 +200,17 @@ public class YetAnotherFileSharingAppClient {
         }
         
         return booleanRet;
+    }
+    
+    public boolean uploadAndRemoveFile(File file) {
+        
+        if (!this.uploadFile(file.getName()))
+            return false;
+        
+        if (!file.delete())
+            return false;
+        
+        return true;
+        
     }
 }

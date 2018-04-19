@@ -17,7 +17,7 @@ import backend.Command;
  */
 public class NewConnectionHandler extends Thread {
 
-    /* 10 Mebibytes (the new Megabyte) */
+    /**/
     static final int transferLength = 8192;
 
     /* All data on the server. */

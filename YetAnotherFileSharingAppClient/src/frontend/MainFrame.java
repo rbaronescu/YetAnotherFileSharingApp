@@ -1,17 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * YetAnotherFileSharingAppClient - The client side.
  */
 package frontend;
 
 import backend.YetAnotherFileSharingAppClient;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
  *
- * @author baronesc
+ * @author Robert Baronescu
  */
 public class MainFrame extends javax.swing.JFrame {
     
@@ -19,6 +21,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     /**
      * Creates new form MainFrame
+     * @param clientInstance
      */
     public MainFrame(YetAnotherFileSharingAppClient clientInstance) {
         
@@ -26,15 +29,11 @@ public class MainFrame extends javax.swing.JFrame {
         
         initComponents();
         updateListOfRemoteFiles();
-        updateListOfLocalFiles();
     }
     
-    private void updateListOfRemoteFiles() {        
-        remoteFilesLst.setListData(clientInstance.getRemoteFilesInfo());
-    }
+    private void updateListOfRemoteFiles() {
 
-    private void updateListOfLocalFiles() {
-        localFilesLst.setListData(clientInstance.getLocalFilesInfo());
+        remoteFilesLst.setListData(clientInstance.getRemoteFilesInfo());
     }
 
     /**
@@ -45,202 +44,75 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        pushSelectedFileBtn = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        listFilesPopUpMnu = new javax.swing.JPopupMenu();
+        openFileMnuItm = new javax.swing.JMenuItem();
+        deleteFileMnuItm = new javax.swing.JMenuItem();
+        mainPnl = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        localFilesLst = new javax.swing.JList<>();
-        jButton10 = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        jButton6 = new javax.swing.JButton();
-        jButton7 = new javax.swing.JButton();
-        jButton8 = new javax.swing.JButton();
-        pullSelectedFileBtn = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
         remoteFilesLst = new javax.swing.JList<>();
-        jButton11 = new javax.swing.JButton();
-        jButton12 = new javax.swing.JButton();
-        jButton13 = new javax.swing.JButton();
-        jButton14 = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+
+        openFileMnuItm.setText("Open File");
+        openFileMnuItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openFileMnuItmActionPerformed(evt);
+            }
+        });
+        listFilesPopUpMnu.add(openFileMnuItm);
+
+        deleteFileMnuItm.setText("Remove File");
+        listFilesPopUpMnu.add(deleteFileMnuItm);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("YetAnotherFileSharingApp");
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Local files"));
+        mainPnl.setBorder(javax.swing.BorderFactory.createTitledBorder("All your files"));
 
-        jButton1.setText("Owned by anyone");
-
-        pushSelectedFileBtn.setText("Push selected file");
-        pushSelectedFileBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pushSelectedFileBtnActionPerformed(evt);
+        remoteFilesLst.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                remoteFilesLstMouseClicked(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                remoteFilesLstMouseReleased(evt);
             }
         });
+        jScrollPane1.setViewportView(remoteFilesLst);
 
-        jButton3.setText("Add existing file");
-
-        jButton4.setText("Create new file");
-
-        jButton5.setText("Open selected file");
-
-        localFilesLst.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane1.setViewportView(localFilesLst);
-
-        jButton10.setText("Remove selected file");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+        javax.swing.GroupLayout mainPnlLayout = new javax.swing.GroupLayout(mainPnl);
+        mainPnl.setLayout(mainPnlLayout);
+        mainPnlLayout.setHorizontalGroup(
+            mainPnlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPnlLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(jButton5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(jButton1)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton10)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(pushSelectedFileBtn)))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+        mainPnlLayout.setVerticalGroup(
+            mainPnlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPnlLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton5)
-                    .addComponent(jButton3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton4)
-                    .addComponent(jButton10)
-                    .addComponent(pushSelectedFileBtn))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Remote files"));
+        jMenu1.setText("File");
 
-        jButton6.setText("Owned by anyone");
+        jMenuItem1.setText("New File");
+        jMenu1.add(jMenuItem1);
 
-        jButton7.setText("Owned by me");
+        jMenuItem2.setText("Upload File");
+        jMenu1.add(jMenuItem2);
 
-        jButton8.setText("Not owned by me");
+        jMenuBar1.add(jMenu1);
 
-        pullSelectedFileBtn.setText("Pull selected file");
-        pullSelectedFileBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pullSelectedFileBtnActionPerformed(evt);
-            }
-        });
+        jMenu2.setText("Edit");
+        jMenuBar1.add(jMenu2);
 
-        remoteFilesLst.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane2.setViewportView(remoteFilesLst);
-
-        jButton11.setText("Share selected file");
-
-        jButton12.setText("Remove selected file");
-
-        jButton13.setText("Manage token of selected file");
-
-        jButton14.setText("Unshare selected file");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(pullSelectedFileBtn))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(jButton6)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton7)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton8))
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jButton13)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jButton14))))
-                        .addGap(0, 138, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton6)
-                    .addComponent(jButton7)
-                    .addComponent(jButton8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton13)
-                    .addComponent(jButton14))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(pullSelectedFileBtn)
-                    .addComponent(jButton11)
-                    .addComponent(jButton12))
-                .addContainerGap())
-        );
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -248,14 +120,14 @@ public class MainFrame extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(mainPnl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(mainPnl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -263,60 +135,85 @@ public class MainFrame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void pullSelectedFileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullSelectedFileBtnActionPerformed
-        if (remoteFilesLst.getSelectedIndex() == -1) {
-            JOptionPane.showMessageDialog(new JFrame(), "No remote file selected!", "Error!",
-                    JOptionPane.ERROR_MESSAGE);
+    private void remoteFilesLstMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remoteFilesLstMouseClicked
+
+        if (evt.isPopupTrigger())
             return;
-        }
+        
+        if (evt.getClickCount() < 2)
+            return;
+        
+        if (remoteFilesLst.getSelectedIndex() == -1)
+            return;
         
         String fileName = remoteFilesLst.getSelectedValue();
-        if (clientInstance.downloadFile(fileName)) {
-            JOptionPane.showMessageDialog(new JFrame(), "File " + fileName + " downloaded successfully!",
-                    "Information!", JOptionPane.INFORMATION_MESSAGE);
-            updateListOfLocalFiles();
-        } else {
+        File tempFile = clientInstance.downloadFile(fileName);
+        if (tempFile == null) {
             JOptionPane.showMessageDialog(new JFrame(), "Remote file doesn't exist!", "Error!",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_pullSelectedFileBtnActionPerformed
-
-    private void pushSelectedFileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pushSelectedFileBtnActionPerformed
-        if (localFilesLst.getSelectedIndex() == -1) {
-            JOptionPane.showMessageDialog(new JFrame(), "No local file selected!", "Error!",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        String fileName = localFilesLst.getSelectedValue();
-        if (clientInstance.uploadFile(fileName)) {
-            JOptionPane.showMessageDialog(new JFrame(), "File " + fileName + " uploaded successfully!",
-                    "Information!", JOptionPane.INFORMATION_MESSAGE);
-            updateListOfRemoteFiles();
+        try {
+            /* Opening file for edit and wait for it to be closed. */
+            String[] cmd = {"cmd.exe", "/C", "start /wait \"", tempFile.getPath(), "\""};
+            Process p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();
+            clientInstance.uploadAndRemoveFile(tempFile);
+            JOptionPane.showMessageDialog(new JFrame(), "File succesfully modified.", "Info",
+                JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_pushSelectedFileBtnActionPerformed
+    }//GEN-LAST:event_remoteFilesLstMouseClicked
+
+    private void remoteFilesLstMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remoteFilesLstMouseReleased
+        
+        remoteFilesLst.setSelectedIndex(remoteFilesLst.locationToIndex(evt.getPoint()));
+        
+        if (evt.isPopupTrigger()) {
+            listFilesPopUpMnu.show(this, evt.getX() + 36, evt.getY() + 75);
+        }
+    }//GEN-LAST:event_remoteFilesLstMouseReleased
+
+    private void openFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileMnuItmActionPerformed
+        String fileName = remoteFilesLst.getSelectedValue();
+        File tempFile = clientInstance.downloadFile(fileName);
+        if (tempFile == null) {
+            JOptionPane.showMessageDialog(new JFrame(), "Remote file doesn't exist!", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        try {
+            /* Opening file for edit and wait for it to be closed. */
+            String[] cmd = {"cmd.exe", "/C", "start /wait \"", tempFile.getPath(), "\""};
+            Process p = Runtime.getRuntime().exec(cmd);
+            listFilesPopUpMnu.setVisible(false);
+            p.waitFor();
+            clientInstance.uploadAndRemoveFile(tempFile);
+            JOptionPane.showMessageDialog(new JFrame(), "File succesfully modified.", "Info",
+                JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_openFileMnuItmActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton10;
-    private javax.swing.JButton jButton11;
-    private javax.swing.JButton jButton12;
-    private javax.swing.JButton jButton13;
-    private javax.swing.JButton jButton14;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JButton jButton7;
-    private javax.swing.JButton jButton8;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel4;
+    private javax.swing.JMenuItem deleteFileMnuItm;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JList<String> localFilesLst;
-    private javax.swing.JButton pullSelectedFileBtn;
-    private javax.swing.JButton pushSelectedFileBtn;
+    private javax.swing.JPopupMenu listFilesPopUpMnu;
+    private javax.swing.JPanel mainPnl;
+    private javax.swing.JMenuItem openFileMnuItm;
     private javax.swing.JList<String> remoteFilesLst;
     // End of variables declaration//GEN-END:variables
 }
