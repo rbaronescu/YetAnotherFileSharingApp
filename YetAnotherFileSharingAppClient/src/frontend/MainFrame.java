@@ -4,11 +4,7 @@
 package frontend;
 
 import backend.YetAnotherFileSharingAppClient;
-import java.awt.Frame;
 import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -81,6 +77,9 @@ public class MainFrame extends javax.swing.JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowActivated(java.awt.event.WindowEvent evt) {
                 formWindowActivated(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
             }
         });
 
@@ -205,11 +204,11 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_openFileMnuItmActionPerformed
 
     private void exitMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMnuItmActionPerformed
+        clientInstance.closeConnection();
         System.exit(0);
     }//GEN-LAST:event_exitMnuItmActionPerformed
 
     private void newFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileMnuItmActionPerformed
-        
         (new NewEmptyFileFrame(this, clientInstance)).setVisible(true);
         this.setEnabled(false);
     }//GEN-LAST:event_newFileMnuItmActionPerformed
@@ -227,7 +226,6 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_deleteFileMnuItmActionPerformed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-        
         updateListOfRemoteFiles();
     }//GEN-LAST:event_formWindowActivated
 
@@ -250,6 +248,10 @@ public class MainFrame extends javax.swing.JFrame {
         }
         
     }//GEN-LAST:event_uploadFileMnuItmActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        clientInstance.closeConnection();
+    }//GEN-LAST:event_formWindowClosing
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem deleteFileMnuItm;

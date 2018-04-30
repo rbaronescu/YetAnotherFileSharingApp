@@ -23,14 +23,17 @@ import java.util.logging.Logger;
 public class YetAnotherFileSharingAppClient {
     
     /* 10 Mebibytes (the new Megabyte) */
-    static final int TRANSFER_LENGTH = 8192;
+    private static final int TRANSFER_LENGTH = 8192;
     
-    String username = "";
-    Socket socket;
-    InputStream serverInputStream;
-    OutputStream serverOutputStream;
-    ObjectInputStream serverObjectInputStream;
-    ObjectOutputStream serverObjectOutputStream;
+    private static final String USERNAME_NEW_USER_REQUEST = "newUserUsername";
+    private static final String PASSWORD_NEW_USER_REQUEST = "newUserPassword";
+    
+    private String username = "";
+    private Socket socket;
+    private InputStream serverInputStream;
+    private OutputStream serverOutputStream;
+    private ObjectInputStream serverObjectInputStream;
+    private ObjectOutputStream serverObjectOutputStream;
     
     public boolean handleClientLogin(String username, String password) {
         
@@ -57,15 +60,57 @@ public class YetAnotherFileSharingAppClient {
             if (result.equals("true")) {
                 this.username = username;
                 ret = true;
+            } else {
+                this.closeConnection();
             }
             
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return ret;
+    }
+    
+    public static boolean handleRegisterNewUser(String username, String password) {
+        
+        Socket tempSocket;
+        InputStream tempServerInputStream;
+        OutputStream tempServerOutputStream;
+        ObjectInputStream tempServerObjectInputStream;
+        ObjectOutputStream tempServerObjectOutputStream;
+        String result = "fail";
+        
+        if (username.isEmpty())
+            return false;
+        
+        try {
+            
+            /* Initiatinig communication with the server. */
+            tempSocket = new Socket("localhost", 5151);
+            tempServerInputStream = tempSocket.getInputStream();
+            tempServerOutputStream = tempSocket.getOutputStream();
+            tempServerObjectInputStream = new ObjectInputStream(tempServerInputStream);
+            tempServerObjectOutputStream = new ObjectOutputStream(tempServerOutputStream);
+            
+            /* Sneding credentials. */
+            tempServerObjectOutputStream.writeObject(USERNAME_NEW_USER_REQUEST);
+            tempServerObjectOutputStream.writeObject(PASSWORD_NEW_USER_REQUEST);
+            
+            /* Sending the command to the server. */
+            String commandType = "registerNewUser";
+            String[] arguments = {username, password};
+            tempServerObjectOutputStream.writeObject(new Command(commandType, arguments));
+            
+            /* Receiving response to login request. */
+            result = (String) tempServerObjectInputStream.readObject();
+            
+            tempSocket.close();
+            
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        }
+        
+        return result.equals("success");
     }
     
     public String[] getRemoteFilesInfo() {
@@ -89,9 +134,7 @@ public class YetAnotherFileSharingAppClient {
             
             Arrays.sort(fileNames);
             
-        } catch (IOException e) {
-            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
         }
         
@@ -307,5 +350,13 @@ public class YetAnotherFileSharingAppClient {
         }
         
         return false;
+    }
+    
+    public void closeConnection() {
+        try {
+            this.socket.close();
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        }
     }
 }

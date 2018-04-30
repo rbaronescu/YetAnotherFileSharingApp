@@ -23,6 +23,10 @@ public class Command implements Serializable {
         this.arguments = arguments;
     }
 
+    public boolean isRegisterNewUser() {
+        return commandType.equals("registerNewUser");
+    }
+
     public boolean isDownload() {
         return commandType.equals("download");
     }

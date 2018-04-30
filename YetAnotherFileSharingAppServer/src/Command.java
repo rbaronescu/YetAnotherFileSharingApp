@@ -1,6 +1,7 @@
 /*
  * YetAnotherFileSharingAppClient - The server side.
  */
+
 package backend;
 
 import java.io.Serializable;
@@ -21,6 +22,10 @@ public class Command implements Serializable {
     public Command(String commandType, String[] arguments) {
         this.commandType = commandType;
         this.arguments = arguments;
+    }
+
+    public boolean isRegisterNewUser() {
+        return commandType.equals("registerNewUser");
     }
 
     public boolean isDownload() {

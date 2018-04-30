@@ -18,19 +18,22 @@ import backend.Command;
 public class NewConnectionHandler extends Thread {
 
     /**/
-    static final int transferLength = 8192;
+    private static final int transferLength = 8192;
 
     /* All data on the server. */
     private static final String DATA_ROOT_PATH = "data";
-    static final String USERS_CSV_FILE_PATH = DATA_ROOT_PATH + "/users.csv";
+    private static final String USERS_CSV_FILE_PATH = DATA_ROOT_PATH + "/users.csv";
 
-    int clientId;
-    Socket clientSocket;
-    String username = "";
-    InputStream clientInputStream;
-    OutputStream clientOutputStream;
-    ObjectInputStream clientObjectInputStream;
-    ObjectOutputStream clientObjectOutputStream;
+    private static final String USERNAME_NEW_USER_REQUEST = "newUserUsername";
+    private static final String PASSWORD_NEW_USER_REQUEST = "newUserPassword";
+
+    private int clientId;
+    private Socket clientSocket;
+    private String username = "";
+    private InputStream clientInputStream;
+    private OutputStream clientOutputStream;
+    private ObjectInputStream clientObjectInputStream;
+    private ObjectOutputStream clientObjectOutputStream;
 
     /**
      *
@@ -54,10 +57,20 @@ public class NewConnectionHandler extends Thread {
             String user = (String) clientObjectInputStream.readObject();
             String password = (String) clientObjectInputStream.readObject();
 
+            /* Testing if this is a "register new user" request. */
+            if (user.equals(USERNAME_NEW_USER_REQUEST)) {
+                if (password.equals(PASSWORD_NEW_USER_REQUEST)) {
+                    registerNewUser((Command) clientObjectInputStream.readObject());
+                    clientSocket.close();
+                    return;
+                }
+            }
+
             /* Testing credentials. */
             boolean result = login(user, password);
             clientObjectOutputStream.writeObject(String.valueOf(result));
             if (!result) {
+                clientSocket.close();
                 return;
             }
 
@@ -124,6 +137,68 @@ public class NewConnectionHandler extends Thread {
         }
 
         return ret;
+    }
+
+    private void registerNewUser(Command command) {
+
+        BufferedReader br = null;
+        String line = "";
+        String splitter = ",";
+        String response = "success";
+
+        String _username = command.getArgument(0);
+        String _password = command.getArgument(1);
+
+        try {
+
+            br = new BufferedReader(new FileReader(USERS_CSV_FILE_PATH));
+            while ((line = br.readLine()) != null) {
+
+                String[] credentials = line.split(splitter);
+                if (_username.equals(credentials[0])) {
+                    response = "fail";
+                    break;
+                }
+            }
+
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+            response = "fail";
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+                }
+            }
+        }
+
+        if (response.equals("success")) {
+
+            try {
+
+                Writer output = new BufferedWriter(new FileWriter(USERS_CSV_FILE_PATH, true));
+                output.append(_username + "," + _password + "\n");
+                output.close();
+
+                File userHome = new File(DATA_ROOT_PATH, _username);
+                if (!userHome.exists()) {
+                    userHome.mkdir();
+                }
+
+            } catch (IOException e) {
+                Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+            }
+        }
+
+        try {
+
+            clientObjectOutputStream.writeObject(response);
+
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
     }
 
     private void sendRemoteFilesOwnedByThisUser() {

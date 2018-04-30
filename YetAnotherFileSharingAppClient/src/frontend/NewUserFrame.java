@@ -3,7 +3,9 @@
  */
 package frontend;
 
+import backend.YetAnotherFileSharingAppClient;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -33,11 +35,11 @@ public class NewUserFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jPasswordField1 = new javax.swing.JPasswordField();
-        jButton2 = new javax.swing.JButton();
+        usernameTxt = new javax.swing.JTextField();
+        passwordTxt = new javax.swing.JPasswordField();
+        registerBtn = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
-        jPasswordField2 = new javax.swing.JPasswordField();
+        repeatPaaswordTxt = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("YetAnotherFileSharingApp");
@@ -54,7 +56,12 @@ public class NewUserFrame extends javax.swing.JFrame {
 
         jLabel4.setText("Type in your desired password:");
 
-        jButton2.setText("Register");
+        registerBtn.setText("Register");
+        registerBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                registerBtnActionPerformed(evt);
+            }
+        });
 
         jLabel5.setText("Repeat your password:");
 
@@ -69,13 +76,13 @@ public class NewUserFrame extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel5)
                             .addComponent(jLabel3)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
+                            .addComponent(usernameTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
                             .addComponent(jLabel4)
-                            .addComponent(jPasswordField1)
-                            .addComponent(jPasswordField2)))
+                            .addComponent(passwordTxt)
+                            .addComponent(repeatPaaswordTxt)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(92, 92, 92)
-                        .addComponent(jButton2)))
+                        .addComponent(registerBtn)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -84,17 +91,17 @@ public class NewUserFrame extends javax.swing.JFrame {
                 .addGap(15, 15, 15)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(usernameTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(passwordTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(12, 12, 12)
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPasswordField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(repeatPaaswordTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton2)
+                .addComponent(registerBtn)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -124,14 +131,37 @@ public class NewUserFrame extends javax.swing.JFrame {
         this.parent.toFront();
     }//GEN-LAST:event_formWindowClosed
 
+    private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
+        
+        if (usernameTxt.getText().isEmpty()) {
+            return;
+        }
+        
+        if ( !passwordTxt.getText().equals(repeatPaaswordTxt.getText()) ) {
+            JOptionPane.showMessageDialog(new JFrame(), "Passwords do not match! Please, try again.", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if (YetAnotherFileSharingAppClient.handleRegisterNewUser(usernameTxt.getText(), passwordTxt.getText())) {
+            JOptionPane.showMessageDialog(new JFrame(), "New user succsefully created.", "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+            this.dispose();
+            return;
+        }
+        
+        JOptionPane.showMessageDialog(new JFrame(), "Username already exists! Please choose another one.", "Error!",
+                JOptionPane.ERROR_MESSAGE);
+    }//GEN-LAST:event_registerBtnActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPasswordField jPasswordField1;
-    private javax.swing.JPasswordField jPasswordField2;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JPasswordField passwordTxt;
+    private javax.swing.JButton registerBtn;
+    private javax.swing.JPasswordField repeatPaaswordTxt;
+    private javax.swing.JTextField usernameTxt;
     // End of variables declaration//GEN-END:variables
 }
