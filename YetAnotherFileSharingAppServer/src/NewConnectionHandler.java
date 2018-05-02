@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import backend.Command;
+import backend.FileInfo;
 
 /**
  *
@@ -92,11 +93,17 @@ public class NewConnectionHandler extends Thread {
         } else if (userCommand.isUpload()) {
             executeUpload(userCommand);
         } else if (userCommand.isGetListOfRemoteFiles()) {
-            sendRemoteFilesOwnedByThisUser();
+            sendRemoteFiles();
         } else if (userCommand.isRemoveFile()) {
             removeFile(userCommand);
         } else if (userCommand.isNewEmptyFile()) {
             newEmptyFile(userCommand);
+        } else if (userCommand.isGetListOfUsers()) {
+            sendListOfUsers();
+        } else if (userCommand.isShareFileWith()) {
+            shareFileWith(userCommand);
+        } else if (userCommand.isCheckForNotifications()) {
+            checkForNotification();
         }
     }
 
@@ -201,20 +208,26 @@ public class NewConnectionHandler extends Thread {
         }
     }
 
-    private void sendRemoteFilesOwnedByThisUser() {
+    private void sendRemoteFiles() {
 
         File userHome = new File(DATA_ROOT_PATH, username);
         ArrayList<String> fileNames = new ArrayList<>(Arrays.asList(userHome.list()));
+        ArrayList<FileInfo> files = new ArrayList<>();
+
+        for (String fileName : fileNames) {
+            FileInfo fileInfo = new FileInfo(fileName, username, username);
+            if (SharedFile.isShared(fileInfo))
+                continue;
+            files.add(fileInfo);
+        }
+        files.addAll(SharedFile.getFilesSharedUser(username));
 
         try {
-
             /* Sending list size. */
-            clientObjectOutputStream.writeObject(String.valueOf(fileNames.size()));
-
-            for (String fileName : fileNames) {
-                clientObjectOutputStream.writeObject(fileName);
+            clientObjectOutputStream.writeObject(String.valueOf(files.size()));
+            for (FileInfo fileInfo : files) {
+                clientObjectOutputStream.writeObject(fileInfo);
             }
-
         } catch (IOException e) {
             Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -223,8 +236,20 @@ public class NewConnectionHandler extends Thread {
     private void executeDownload(Command command) {
 
         byte[] buf = new byte[transferLength];
-        File userHome = new File(DATA_ROOT_PATH, username);
-        File f = new File(userHome, command.getArgument(0));
+        FileInfo fileInfo = new FileInfo(command.getArgument(0), command.getArgument(1), "");
+        SharedFile sharedFile = SharedFile.getSharedFile(fileInfo);
+        File ownerHome, f;
+
+        /*
+         * If file is shred with/by this user, then I'll send it,
+         * else it means the file owner has to be the logged in user.
+         */
+        if ((sharedFile != null) && (sharedFile.hasOwner(username) || sharedFile.isSharedWith(username))) {
+            ownerHome = new File(DATA_ROOT_PATH, sharedFile.getOwner());
+        } else {
+            ownerHome = new File(DATA_ROOT_PATH, username);
+        }
+        f = new File(ownerHome, fileInfo.getFileName());
 
         try {
             if (!f.exists()) {
@@ -253,13 +278,28 @@ public class NewConnectionHandler extends Thread {
         /* Amount of data transfered between client and server. */
         byte[] receivedData = new byte[transferLength];
 
-        /* User home must exist, it is created upon registration. */
-        File userHome = new File(DATA_ROOT_PATH, username);
+        FileInfo fileInfo = new FileInfo(command.getArgument(0), command.getArgument(2), "");
+        SharedFile sharedFile = SharedFile.getSharedFile(fileInfo);
+        File ownerHome = null;
+
+        if (sharedFile != null) {
+            if (sharedFile.hasTokenHolder(username)) {
+                ownerHome = new File(DATA_ROOT_PATH, sharedFile.getOwner());
+            }
+        } else {
+            ownerHome = new File(DATA_ROOT_PATH, username);
+        }
 
         try {
 
+            if (ownerHome == null) {
+                clientObjectOutputStream.writeObject("denied");
+                return;
+            }
+            clientObjectOutputStream.writeObject("granted");
+
             /* Start receveing the file. The received data is written to fileOut. */
-            File fileOut = new File(userHome, command.getArgument(0));
+            File fileOut = new File(ownerHome, command.getArgument(0));
             if (!fileOut.exists()) {
                 fileOut.createNewFile();
             }
@@ -303,7 +343,7 @@ public class NewConnectionHandler extends Thread {
             clientObjectOutputStream.writeObject("success");
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -322,7 +362,81 @@ public class NewConnectionHandler extends Thread {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void sendListOfUsers() {
+
+        BufferedReader br = null;
+        String line = "";
+        String splitter = ",";
+        ArrayList<String> users = new ArrayList<>();
+
+        try {
+
+            br = new BufferedReader(new FileReader(USERS_CSV_FILE_PATH));
+            while ((line = br.readLine()) != null) {
+                String[] userInfo = line.split(splitter);
+                users.add(userInfo[0]);
+            }
+
+            /* Sending list size. */
+            clientObjectOutputStream.writeObject(String.valueOf(users.size()));
+            for (String userName : users) {
+                clientObjectOutputStream.writeObject(userName);
+            }
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void shareFileWith(Command command) {
+
+        File userHome = new File(DATA_ROOT_PATH, username);
+        File f = new File(userHome, command.getArgument(0));
+        SharedFile sharedFile = null;
+
+        if (f.exists()) {
+
+            FileInfo fileInfo = new FileInfo(f.getName(), username, "");
+            sharedFile = SharedFile.getSharedFile(fileInfo);
+
+            if (sharedFile == null || !sharedFile.isSharedWith(command.getArgument(1))) {
+                sharedFile = new SharedFile(command.getArgument(0), username);
+                sharedFile.addReadUser(command.getArgument(1));
+                ArrayList<SharedFile> userInvites = SharedFile.getUserInvites(command.getArgument(1));
+                if (!userInvites.contains(sharedFile)) {
+                    SharedFile.addSharedFileInvite(sharedFile);
+                } else {
+                    sharedFile = null;
+                }
+            }
+        }
+
+        try {
+            if (sharedFile != null) {
+                clientObjectOutputStream.writeObject("success");
+                System.out.println("sent success");
+            } else {
+                clientObjectOutputStream.writeObject("file not found");
+                System.out.println("sent file not found");
+            }
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void checkForNotification() {
+
+        try {
+            if (!SharedFile.getUserInvites(username).isEmpty()) {
+                clientObjectOutputStream.writeObject("yes");
+            } else {
+                clientObjectOutputStream.writeObject("no");
+            }
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * YetAnotherFileSharingAppClient - The server side.
+ * YetAnotherFileSharingAppServer - The server side.
  */
 
 package backend;
@@ -46,6 +46,18 @@ public class Command implements Serializable {
 
     public boolean isGetListOfRemoteFiles() {
         return commandType.equals("getListOfRemoteFiles");
+    }
+
+    public boolean isGetListOfUsers() {
+        return  commandType.equals("getListOfUsers");
+    }
+
+    public boolean isShareFileWith() {
+        return commandType.equals("shareFileWith");
+    }
+
+    public boolean isCheckForNotifications() {
+        return  commandType.equals("checkForNotifications");
     }
 
     public String getArgument(int index) {

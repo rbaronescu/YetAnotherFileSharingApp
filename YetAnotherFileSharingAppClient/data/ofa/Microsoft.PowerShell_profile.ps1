@@ -13,4 +13,4 @@ set-alias open Start-Process
 Set-PSReadlineOption -BellStyle None
 Import-Module PSReadLine
 Set-PSReadLineKeyHandler -Key Tab -Function Complete
-aaaabsq ~ pq ~ sq ~ pq ~ sssq ~ pq ~ asssq ~ pq ~ sssq ~ pq ~ s
+aaaa

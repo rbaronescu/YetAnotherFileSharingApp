@@ -5,7 +5,6 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,14 +14,19 @@ import java.util.logging.Logger;
  */
 public class YetAnotherFileSharingAppServer {
 
-    static final int SERVER_PORT = 5151;
-
-    static ServerSocket listeningSocket;
-    static int clientId = 0;
+    static private final int SERVER_PORT = 5151;
+    static private ServerSocket listeningSocket;
+    static private int clientId = 0;
 
     public static void main(String[] args) {
 
-        Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.INFO, "Server started...");
+        Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.INFO, "server started");
+
+        Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.INFO, "reading config files..");
+        SharedFile.fillSharedFilesList();
+        Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.INFO, "read config files");
+
+
         Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.INFO,
                 "Waiting for connections...");
 

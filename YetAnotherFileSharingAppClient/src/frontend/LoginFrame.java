@@ -178,7 +178,6 @@ public class LoginFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_loginBtnKeyPressed
 
     private void newUserBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newUserBtnActionPerformed
-        
         (new NewUserFrame(this)).setVisible(true);
         this.setEnabled(false);
     }//GEN-LAST:event_newUserBtnActionPerformed

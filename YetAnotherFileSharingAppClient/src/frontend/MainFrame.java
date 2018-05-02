@@ -3,11 +3,15 @@
  */
 package frontend;
 
+import backend.FileInfo;
 import backend.YetAnotherFileSharingAppClient;
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -15,7 +19,10 @@ import javax.swing.JOptionPane;
  */
 public class MainFrame extends javax.swing.JFrame {
     
-    YetAnotherFileSharingAppClient clientInstance;
+    private final YetAnotherFileSharingAppClient clientInstance;
+    private final DefaultTableModel remoteFilesTblModel;
+    private final Timer timer;
+    private final TimerTask task;
 
     /**
      * Creates new form MainFrame
@@ -23,15 +30,43 @@ public class MainFrame extends javax.swing.JFrame {
      */
     public MainFrame(YetAnotherFileSharingAppClient clientInstance) {
         
-        this.clientInstance = clientInstance;
-        
         initComponents();
-        updateListOfRemoteFiles();
+
+        this.clientInstance = clientInstance;
+        this.remoteFilesTblModel = (DefaultTableModel) remoteFilesTbl.getModel();
+        updateTableOfRemoteFiles();
+        loginInfoLbl.setText("Logged in as user: \"" + clientInstance.getUsername() + "\"");
+        
+        this.timer = new Timer();
+        this.task = new TimerTask() {
+            @Override
+            public void run() {
+                
+                int notif = clientInstance.hasNotifications();
+                
+                if (notif == 1) {
+                    notificationsBtn.setText("You Have Notifications!");
+                } else if (notif == 0) {
+                    notificationsBtn.setText("No Notifications");
+                }
+            }
+        };
+        timer.scheduleAtFixedRate(task, 0, 2000);
     }
     
-    private void updateListOfRemoteFiles() {
+    private void updateTableOfRemoteFiles() {
 
-        remoteFilesLst.setListData(clientInstance.getRemoteFilesInfo());
+        FileInfo[] files = clientInstance.getRemoteFilesInfo();
+        
+        remoteFilesTblModel.setRowCount(0);
+        for (FileInfo fileInfo : files) {
+            remoteFilesTblModel.addRow(new Object[]
+            {
+                fileInfo.getFileName(),
+                fileInfo.getOwner(),
+                fileInfo.getTokenHolder()
+            });
+        }
     }
 
     /**
@@ -45,10 +80,19 @@ public class MainFrame extends javax.swing.JFrame {
         listFilesPopUpMnu = new javax.swing.JPopupMenu();
         openFileMnuItm = new javax.swing.JMenuItem();
         deleteFileMnuItm = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        shareFileMnuItm = new javax.swing.JMenuItem();
         fileChooser = new javax.swing.JFileChooser();
         mainPnl = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        remoteFilesLst = new javax.swing.JList<>();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        remoteFilesTbl = new javax.swing.JTable() {
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        };
+        jPanel1 = new javax.swing.JPanel();
+        loginInfoLbl = new javax.swing.JLabel();
+        notificationsBtn = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMnu = new javax.swing.JMenu();
         newFileMnuItm = new javax.swing.JMenuItem();
@@ -71,6 +115,15 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         listFilesPopUpMnu.add(deleteFileMnuItm);
+        listFilesPopUpMnu.add(jSeparator1);
+
+        shareFileMnuItm.setText("Share File With...");
+        shareFileMnuItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                shareFileMnuItmActionPerformed(evt);
+            }
+        });
+        listFilesPopUpMnu.add(shareFileMnuItm);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("YetAnotherFileSharingApp");
@@ -85,15 +138,21 @@ public class MainFrame extends javax.swing.JFrame {
 
         mainPnl.setBorder(javax.swing.BorderFactory.createTitledBorder("All your files"));
 
-        remoteFilesLst.addMouseListener(new java.awt.event.MouseAdapter() {
+        remoteFilesTbl.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {},
+            new String [] {
+                "File Name", "Owner", "Token's Holder"
+            }
+        ));
+        remoteFilesTbl.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                remoteFilesLstMouseClicked(evt);
+                remoteFilesTblMouseClicked(evt);
             }
             public void mouseReleased(java.awt.event.MouseEvent evt) {
-                remoteFilesLstMouseReleased(evt);
+                remoteFilesTblMouseReleased(evt);
             }
         });
-        jScrollPane1.setViewportView(remoteFilesLst);
+        jScrollPane2.setViewportView(remoteFilesTbl);
 
         javax.swing.GroupLayout mainPnlLayout = new javax.swing.GroupLayout(mainPnl);
         mainPnl.setLayout(mainPnlLayout);
@@ -101,15 +160,39 @@ public class MainFrame extends javax.swing.JFrame {
             mainPnlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPnlLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
                 .addContainerGap())
         );
         mainPnlLayout.setVerticalGroup(
             mainPnlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mainPnlLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPnlLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
                 .addContainerGap())
+        );
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("User Info"));
+
+        loginInfoLbl.setText("Logged in as user: \"username\"");
+
+        notificationsBtn.setText("No Notifications");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(loginInfoLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(notificationsBtn)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(notificationsBtn)
+                .addComponent(loginInfoLbl))
         );
 
         fileMnu.setText("File");
@@ -149,15 +232,19 @@ public class MainFrame extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(mainPnl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(mainPnl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(mainPnl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -166,38 +253,12 @@ public class MainFrame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void remoteFilesLstMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remoteFilesLstMouseClicked
-
-        if (evt.isPopupTrigger())
-            return;
-        
-        if (evt.getClickCount() < 2)
-            return;
-        
-        if (remoteFilesLst.getSelectedIndex() == -1)
-            return;
-        
-        String fileName = remoteFilesLst.getSelectedValue();
-        if (!clientInstance.editRemoteFile(fileName)) {
-            JOptionPane.showMessageDialog(new JFrame(), "Remote file could not be opened!", "Error!",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_remoteFilesLstMouseClicked
-
-    private void remoteFilesLstMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remoteFilesLstMouseReleased
-        
-        remoteFilesLst.setSelectedIndex(remoteFilesLst.locationToIndex(evt.getPoint()));
-        
-        if (evt.isPopupTrigger()) {
-            listFilesPopUpMnu.show(this, evt.getX() + 36, evt.getY() + 90);
-        }
-    }//GEN-LAST:event_remoteFilesLstMouseReleased
-
     private void openFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileMnuItmActionPerformed
+
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
+        String fileOwner = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 1);
         
-        String fileName = remoteFilesLst.getSelectedValue();
-        
-        if (!clientInstance.editRemoteFile(fileName)) {
+        if (!clientInstance.editRemoteFile(fileName, fileOwner)) {
             JOptionPane.showMessageDialog(new JFrame(), "Remote file could not be openend!", "Error!",
                     JOptionPane.ERROR_MESSAGE);
         }
@@ -215,18 +276,18 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void deleteFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteFileMnuItmActionPerformed
         
-        String fileName = remoteFilesLst.getSelectedValue();
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
         
         if (!clientInstance.removeFile(fileName)) {
             JOptionPane.showMessageDialog(new JFrame(), "Remote file does not exist!", "Error!",
                     JOptionPane.ERROR_MESSAGE);
         }
         
-        updateListOfRemoteFiles();
+        updateTableOfRemoteFiles();
     }//GEN-LAST:event_deleteFileMnuItmActionPerformed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-        updateListOfRemoteFiles();
+        updateTableOfRemoteFiles();
     }//GEN-LAST:event_formWindowActivated
 
     private void uploadFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadFileMnuItmActionPerformed
@@ -244,7 +305,7 @@ public class MainFrame extends javax.swing.JFrame {
                     JOptionPane.ERROR_MESSAGE);
             }
             
-            updateListOfRemoteFiles();
+            updateTableOfRemoteFiles();
         }
         
     }//GEN-LAST:event_uploadFileMnuItmActionPerformed
@@ -253,6 +314,51 @@ public class MainFrame extends javax.swing.JFrame {
         clientInstance.closeConnection();
     }//GEN-LAST:event_formWindowClosing
 
+    private void remoteFilesTblMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remoteFilesTblMouseClicked
+        
+        if (evt.isPopupTrigger())
+            return;
+
+        if (evt.getClickCount() < 2)
+            return;
+
+        if (remoteFilesTbl.getSelectedRow() == -1)
+            return;
+
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
+        String fileOwner = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 1);
+        if (!clientInstance.editRemoteFile(fileName, fileOwner)) {
+            JOptionPane.showMessageDialog(new JFrame(), "Remote file could not be opened!", "Error!",
+                JOptionPane.ERROR_MESSAGE);
+        }        
+    }//GEN-LAST:event_remoteFilesTblMouseClicked
+
+    private void remoteFilesTblMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remoteFilesTblMouseReleased
+
+        int row = remoteFilesTbl.rowAtPoint(evt.getPoint());
+        if (row >= 0 && row < remoteFilesTbl.getRowCount()) {
+            remoteFilesTbl.setRowSelectionInterval(row, row);
+        } else {
+            remoteFilesTbl.clearSelection();
+        }
+
+        if (remoteFilesTbl.getSelectedRow() < 0) {
+            return;
+        }
+        
+        if (evt.isPopupTrigger()) {
+            listFilesPopUpMnu.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_remoteFilesTblMouseReleased
+
+    private void shareFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shareFileMnuItmActionPerformed
+
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
+
+        (new ShareFileFrame(this, fileName, clientInstance)).setVisible(true);
+        this.setEnabled(false);
+    }//GEN-LAST:event_shareFileMnuItmActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem deleteFileMnuItm;
     private javax.swing.JMenuItem exitMnuItm;
@@ -260,12 +366,17 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JMenu fileMnu;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu listFilesPopUpMnu;
+    private javax.swing.JLabel loginInfoLbl;
     private javax.swing.JPanel mainPnl;
     private javax.swing.JMenuItem newFileMnuItm;
+    private javax.swing.JButton notificationsBtn;
     private javax.swing.JMenuItem openFileMnuItm;
-    private javax.swing.JList<String> remoteFilesLst;
+    private javax.swing.JTable remoteFilesTbl;
+    private javax.swing.JMenuItem shareFileMnuItm;
     private javax.swing.JMenuItem uploadFileMnuItm;
     // End of variables declaration//GEN-END:variables
 }
