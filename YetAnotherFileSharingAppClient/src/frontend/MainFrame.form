@@ -34,6 +34,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="shareFileMnuItmActionPerformed"/>
           </Events>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="kickMnuItm">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Kick From File..."/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="kickMnuItmActionPerformed"/>
+          </Events>
+        </MenuItem>
       </SubComponents>
     </Container>
     <Component class="javax.swing.JFileChooser" name="fileChooser">
@@ -225,6 +233,9 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="No Notifications"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="notificationsBtnActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

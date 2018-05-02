@@ -122,6 +122,35 @@ public class SharedFile {
         return null;
     }
 
+    public static SharedFile getUserInvite(FileInfo fileInfo, String username) {
+        ArrayList<SharedFile> invites = SharedFile.getUserInvites(username);
+        for (SharedFile invite : invites) {
+            if (fileInfo.getFileName().equals(invite.getFileName())) {
+                if (fileInfo.getOwner().equals(invite.getOwner())) {
+                    return invite;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static void acceptInvite(SharedFile invite) {
+        FileInfo fileInfo = new FileInfo(invite.getFileName(), invite.getOwner(), "");
+        SharedFile sharedFile = SharedFile.getSharedFile(fileInfo);
+
+        if (sharedFile == null) {
+            sharedFile = new SharedFile(fileInfo.getFileName(), fileInfo.getOwner());
+            SharedFile.addNewSharedFile(sharedFile);
+        }
+        sharedFile.addReadUser(invite.readUsers.get(0));
+        sharedFileInvites.remove(invite);
+    }
+
+    public static void declineInvite(SharedFile invite) {
+        sharedFileInvites.remove(invite);
+    }
+
     /* Returns a list of all the files shared with or by the user - username. */
     public static ArrayList<FileInfo> getFilesSharedUser(String username) {
 

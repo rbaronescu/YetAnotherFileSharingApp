@@ -99,11 +99,15 @@ public class NewConnectionHandler extends Thread {
         } else if (userCommand.isNewEmptyFile()) {
             newEmptyFile(userCommand);
         } else if (userCommand.isGetListOfUsers()) {
-            sendListOfUsers();
+            sendListOfUsers(userCommand);
         } else if (userCommand.isShareFileWith()) {
             shareFileWith(userCommand);
         } else if (userCommand.isCheckForNotifications()) {
             checkForNotification();
+        } else if (userCommand.isGetUserInvtitations()) {
+            sendUserInvtitations();
+        } else if (userCommand.isRespondToNotification()) {
+            processResponseToNotification(userCommand);
         }
     }
 
@@ -366,19 +370,28 @@ public class NewConnectionHandler extends Thread {
         }
     }
 
-    private void sendListOfUsers() {
+    /* It sends list of users that doesn't or does share a specified file. */
+    private void sendListOfUsers(Command command) {
 
         BufferedReader br = null;
         String line = "";
         String splitter = ",";
         ArrayList<String> users = new ArrayList<>();
 
+        FileInfo fileInfo = new FileInfo(command.getArgument(0), username, "");
+        SharedFile sharedFile = SharedFile.getSharedFile(fileInfo);
+        if (sharedFile == null) {
+            sharedFile = new SharedFile("", "");
+        }
+
         try {
 
             br = new BufferedReader(new FileReader(USERS_CSV_FILE_PATH));
             while ((line = br.readLine()) != null) {
                 String[] userInfo = line.split(splitter);
-                users.add(userInfo[0]);
+                if (!userInfo[0].equals(username) && !sharedFile.isSharedWith(userInfo[0]) && SharedFile.getUserInvite(fileInfo, userInfo[0]) == null) {
+                    users.add(userInfo[0]);
+                }
             }
 
             /* Sending list size. */
@@ -437,6 +450,37 @@ public class NewConnectionHandler extends Thread {
             }
         } catch (IOException e) {
             Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void sendUserInvtitations() {
+
+
+        ArrayList<SharedFile> invitations = SharedFile.getUserInvites(username);
+
+        try {
+            /* Sending list size. */
+            clientObjectOutputStream.writeObject(String.valueOf(invitations.size()));
+            for (SharedFile sharedFile : invitations) {
+                clientObjectOutputStream.writeObject(
+                        new FileInfo(sharedFile.getFileName(), sharedFile.getOwner(), "")
+                );
+            }
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void processResponseToNotification(Command command) {
+
+        FileInfo fileInfo = new FileInfo(command.getArgument(0), command.getArgument(1), "");
+        SharedFile invite = SharedFile.getUserInvite(fileInfo, username);
+        String response = command.getArgument(2);
+
+        if (response.equals("accept")) {
+            SharedFile.acceptInvite(invite);
+        } else {
+            SharedFile.declineInvite(invite);
         }
     }
 }

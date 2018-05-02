@@ -60,6 +60,14 @@ public class Command implements Serializable {
         return  commandType.equals("checkForNotifications");
     }
 
+    public boolean isGetUserInvtitations() {
+        return commandType.equals("getUserInvitations");
+    }
+
+    public boolean isRespondToNotification() {
+        return commandType.equals("respondToNotify");
+    }
+
     public String getArgument(int index) {
         return arguments[index];
     }

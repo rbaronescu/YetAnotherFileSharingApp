@@ -14,7 +14,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author baronesc
  */
-public class ShareFileFrame extends javax.swing.JFrame {
+public class KickUserFrame extends javax.swing.JFrame {
     
     private final JFrame parent;
     private final String fileName;
@@ -28,7 +28,7 @@ public class ShareFileFrame extends javax.swing.JFrame {
      * @param fileName
      * @param clientInstance
      */
-    public ShareFileFrame(JFrame parent, String fileName, YetAnotherFileSharingAppClient clientInstance) {
+    public KickUserFrame(JFrame parent, String fileName, YetAnotherFileSharingAppClient clientInstance) {
         
         initComponents();
         
@@ -38,7 +38,7 @@ public class ShareFileFrame extends javax.swing.JFrame {
         this.usersTblModel = (DefaultTableModel) usersTbl.getModel();
         
         updateTableOfUsers();
-        ShareFileNameLbl.setText("Share \"" + fileName + "\", with:");
+        kickUserFilenameLbl.setText("Kick user from \"" + fileName + "\":");
     }
     
     private void updateTableOfUsers() {
@@ -69,7 +69,7 @@ public class ShareFileFrame extends javax.swing.JFrame {
                 return false;
             }
         };
-        ShareFileNameLbl = new javax.swing.JLabel();
+        kickUserFilenameLbl = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         userPrefixTxt = new javax.swing.JTextField();
 
@@ -97,7 +97,7 @@ public class ShareFileFrame extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(usersTbl);
 
-        ShareFileNameLbl.setText("Share \"filename\", with:");
+        kickUserFilenameLbl.setText("Kick user from \"filename\":");
 
         jLabel2.setText("Filter useres by name:");
 
@@ -121,7 +121,7 @@ public class ShareFileFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(ShareFileNameLbl)
+                        .addComponent(kickUserFilenameLbl)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel2)
@@ -133,7 +133,7 @@ public class ShareFileFrame extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(ShareFileNameLbl)
+                .addComponent(kickUserFilenameLbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -213,10 +213,10 @@ public class ShareFileFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_userPrefixTxtCaretUpdate
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel ShareFileNameLbl;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel kickUserFilenameLbl;
     private javax.swing.JTextField userPrefixTxt;
     private javax.swing.JTable usersTbl;
     // End of variables declaration//GEN-END:variables

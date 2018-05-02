@@ -176,7 +176,7 @@ public class YetAnotherFileSharingAppClient {
             
             response = (String) serverObjectInputStream.readObject();
             if (response.equals("file not found")) {
-                lock.unlock();
+                //lock.unlock();
                 return false;
             }
             
@@ -230,7 +230,7 @@ public class YetAnotherFileSharingAppClient {
             
             response = (String) serverObjectInputStream.readObject();
             if (response.equals("denied")) {
-                lock.unlock();
+                //lock.unlock();
                 return false;
             }
             
@@ -284,7 +284,7 @@ public class YetAnotherFileSharingAppClient {
             
             response = (String) serverObjectInputStream.readObject();
             if (response.equals("denied")) {
-                lock.unlock();
+                //lock.unlock();
                 return false;
             }
             
@@ -361,7 +361,7 @@ public class YetAnotherFileSharingAppClient {
             
             response = (String) serverObjectInputStream.readObject();
             if (!response.equals("file not found")) {
-                lock.unlock();
+                //lock.unlock();
                 return true;
             }
         } catch (IOException | ClassNotFoundException e) {
@@ -386,7 +386,7 @@ public class YetAnotherFileSharingAppClient {
             
             response = (String) serverObjectInputStream.readObject();
             if (response.equals("success")) {
-                lock.unlock();
+                //lock.unlock();
                 return true;
             }
             
@@ -399,7 +399,7 @@ public class YetAnotherFileSharingAppClient {
         return false;
     }
     
-    public String[] getListOfUsers() {
+    public String[] getListOfUsers(String fileName) {
         
         int numberOfUsers;
         String[] users = null;
@@ -409,7 +409,8 @@ public class YetAnotherFileSharingAppClient {
             /* Sending the command to the server. */
             lock.lock();
             String commandType = "getListOfUsers";
-            serverObjectOutputStream.writeObject(new Command(commandType, null));
+            String[] arguments = {fileName};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
             
             /* Receiving number of users. */
             numberOfUsers = Integer.parseInt((String) serverObjectInputStream.readObject());
@@ -487,6 +488,53 @@ public class YetAnotherFileSharingAppClient {
         }
         
         return ret;
+    }
+    
+    public FileInfo[] getUserInvitations() {
+        
+        int numberOfInvitations;
+        FileInfo[] files = null;
+
+        try {
+            
+            /* Sending the command to the server. */
+            lock.lock();
+            String commandType = "getUserInvitations";
+            serverObjectOutputStream.writeObject(new Command(commandType, null));
+            
+            /* Receiving number of remote files. */
+            numberOfInvitations = Integer.parseInt((String) serverObjectInputStream.readObject());
+            
+            files = new FileInfo[numberOfInvitations];
+            for (int i = 0; i < numberOfInvitations; i++) {
+                files[i] = (FileInfo) serverObjectInputStream.readObject();
+            }
+            
+            Arrays.sort(files, FileInfo.FileInfoNameComparator);
+            
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            lock.unlock();
+        }
+        
+        return files;
+    }
+    
+    /* @operation may be "accept" or "decline". */
+    public void respondToNotification(String fileName, String owner, String operation) {
+        
+        try {
+            /* Sending the command to the server. */
+            lock.lock();
+            String commandType = "respondToNotify";
+            String[] arguments = {fileName, owner, operation};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            lock.unlock();
+        }
     }
     
     public String getUsername() {

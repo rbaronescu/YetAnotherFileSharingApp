@@ -82,6 +82,7 @@ public class MainFrame extends javax.swing.JFrame {
         deleteFileMnuItm = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         shareFileMnuItm = new javax.swing.JMenuItem();
+        kickMnuItm = new javax.swing.JMenuItem();
         fileChooser = new javax.swing.JFileChooser();
         mainPnl = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -124,6 +125,14 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         listFilesPopUpMnu.add(shareFileMnuItm);
+
+        kickMnuItm.setText("Kick From File...");
+        kickMnuItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                kickMnuItmActionPerformed(evt);
+            }
+        });
+        listFilesPopUpMnu.add(kickMnuItm);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("YetAnotherFileSharingApp");
@@ -176,6 +185,11 @@ public class MainFrame extends javax.swing.JFrame {
         loginInfoLbl.setText("Logged in as user: \"username\"");
 
         notificationsBtn.setText("No Notifications");
+        notificationsBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                notificationsBtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -288,6 +302,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
         updateTableOfRemoteFiles();
+        this.task.run();
     }//GEN-LAST:event_formWindowActivated
 
     private void uploadFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadFileMnuItmActionPerformed
@@ -352,12 +367,21 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_remoteFilesTblMouseReleased
 
     private void shareFileMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shareFileMnuItmActionPerformed
-
         String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
-
         (new ShareFileFrame(this, fileName, clientInstance)).setVisible(true);
         this.setEnabled(false);
     }//GEN-LAST:event_shareFileMnuItmActionPerformed
+
+    private void notificationsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_notificationsBtnActionPerformed
+        (new NotificationsFrame(this, clientInstance)).setVisible(true);
+        this.setEnabled(false);
+    }//GEN-LAST:event_notificationsBtnActionPerformed
+
+    private void kickMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kickMnuItmActionPerformed
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
+        (new KickUserFrame(this, fileName, clientInstance)).setVisible(true);
+        this.setEnabled(false);
+    }//GEN-LAST:event_kickMnuItmActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem deleteFileMnuItm;
@@ -369,6 +393,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JMenuItem kickMnuItm;
     private javax.swing.JPopupMenu listFilesPopUpMnu;
     private javax.swing.JLabel loginInfoLbl;
     private javax.swing.JPanel mainPnl;
