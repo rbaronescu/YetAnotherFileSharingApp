@@ -11,6 +11,14 @@ public class FileInfo implements Comparable<FileInfo>, Serializable {
     private String fileName;
     private String owner;
     private String tokenHolder;
+    private String type;
+
+    public FileInfo(String fileName, String owner, String tokenHolder, String type) {
+        this.fileName = fileName;
+        this.owner = owner;
+        this.tokenHolder = tokenHolder;
+        this.type = type;
+    }
 
     public FileInfo(String fileName, String owner, String tokenHolder) {
         this.fileName = fileName;
@@ -28,6 +36,14 @@ public class FileInfo implements Comparable<FileInfo>, Serializable {
 
     public String getTokenHolder() {
         return tokenHolder;
+    }
+
+    public boolean isInvite() {
+        return type.equals("invite");
+    }
+
+    public boolean isKick() {
+        return type.equals("kick");
     }
 
     public int compareTo(FileInfo fileInfo) {

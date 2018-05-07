@@ -60,12 +60,24 @@ public class Command implements Serializable {
         return  commandType.equals("checkForNotifications");
     }
 
-    public boolean isGetUserInvtitations() {
-        return commandType.equals("getUserInvitations");
+    public boolean isGetUserNotifications() {
+        return commandType.equals("getUserNotifications");
     }
 
     public boolean isRespondToNotification() {
         return commandType.equals("respondToNotify");
+    }
+
+    public boolean isgetListOfUsersWithAccessTo() {
+        return commandType.equals("getListOfUsersWithAccessTo");
+    }
+
+    public boolean isKickUserFrom() {
+        return commandType.equals("KickUserFrom");
+    }
+
+    public boolean isChangeTokenHolder() {
+        return commandType.equals("changeTokenHolder");
     }
 
     public String getArgument(int index) {

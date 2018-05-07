@@ -1,4 +1,4 @@
-Curs 5 - SO2ss
+sasaCurs 5 - SO2ss
 
 Desi, echipamentele pot fi controlate in intregime prin intermediul porturilor I/O sau zone de memorie specializate.
 Interrupt ReQuest oposed to polling, unde CPU-l intreaba mereu hardware-ul de starea lor..., polling nu e chiar ok...

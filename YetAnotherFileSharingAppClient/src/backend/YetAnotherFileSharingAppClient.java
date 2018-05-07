@@ -23,6 +23,9 @@ import java.util.logging.Logger;
  */
 public class YetAnotherFileSharingAppClient {
     
+    public static final int FILE_NOT_FOUND = 1;
+    public static final int USER_DO_NOT_HOLD_TOKEN = 2;
+    
     /* 10 Mebibytes (the new Megabyte) */
     private static final int TRANSFER_LENGTH = 8192;
     
@@ -310,23 +313,23 @@ public class YetAnotherFileSharingAppClient {
         return booleanRet;
     }
     
-    public boolean editRemoteFile(String fileName, String fileOwner) {
+    public int editRemoteFile(String fileName, String fileOwner) {
         
         /* Downloading file for editing. */
         if (!downloadFile(fileName, fileOwner)) {
-            return false;
+            return FILE_NOT_FOUND;
         }
         
         /* Opening user home directory. */
         File userHome = new File("data", username);
         if (!userHome.exists()) {
-            return false;
+            return FILE_NOT_FOUND;
         }
         
         /* Opening download file. */
         File file = new File(userHome, fileName);
         if (!file.exists()) {
-            return false;
+            return FILE_NOT_FOUND;
         }
         
         /* Opening file in editor and wait for it to be closed. */
@@ -341,10 +344,15 @@ public class YetAnotherFileSharingAppClient {
         }
         
         /* Uploading modifications in file. */
-        if (!this.uploadFile(file.getName(), fileOwner))
-            return false;
+        if (!this.uploadFile(file.getName(), fileOwner)) {
+            return USER_DO_NOT_HOLD_TOKEN;
+        }
         
-        return file.delete();
+        if (!file.delete()) {
+            return FILE_NOT_FOUND;
+        }
+        
+        return 0;
     }
     
     public boolean removeFile(String fileName) {
@@ -431,6 +439,38 @@ public class YetAnotherFileSharingAppClient {
         return users;
     }
     
+    public String[] getListOfUsersWithAccessTo(String fileName, String isChangeTokenHolder) {
+        
+        int numberOfUsers;
+        String[] users = null;
+
+        try {
+            
+            /* Sending the command to the server. */
+            lock.lock();
+            String commandType = "getListOfUsersWithAccessTo";
+            String[] arguments = {fileName, isChangeTokenHolder};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
+            
+            /* Receiving number of users. */
+            numberOfUsers = Integer.parseInt((String) serverObjectInputStream.readObject());
+            
+            users = new String[numberOfUsers];
+            for (int i = 0; i < numberOfUsers; i++) {
+                users[i] = (String) serverObjectInputStream.readObject();
+            }
+            
+            Arrays.sort(users);
+            
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            lock.unlock();
+        }
+        
+        return users;
+    }
+    
     public boolean ShareFileWith(String fileName, String username) {
         
         String response = "";
@@ -451,6 +491,47 @@ public class YetAnotherFileSharingAppClient {
         } finally {
             lock.unlock();
 
+        }
+        
+        return response.equals("success");
+    }
+    
+    public void KickUserFrom(String fileName, String username) {
+        
+        try {
+            
+            /* Sending the command to the server. */
+            lock.lock();
+            String commandType = "KickUserFrom";
+            String[] arguments = {fileName, username};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
+            
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            lock.unlock();
+        }
+    }
+    
+    public boolean changeTokenHolder(String fileName, String newTokenHoder) {
+         
+        String response = "";
+        
+        try {
+            
+            /* Sending the command to the server. */
+            lock.lock();
+            String commandType = "changeTokenHolder";
+            String[] arguments = {fileName, newTokenHoder};
+            serverObjectOutputStream.writeObject(new Command(commandType, arguments));
+            
+            /* Receiving response. */
+            response = (String) serverObjectInputStream.readObject();
+            
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger(YetAnotherFileSharingAppClient.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            lock.unlock();
         }
         
         return response.equals("success");
@@ -490,7 +571,7 @@ public class YetAnotherFileSharingAppClient {
         return ret;
     }
     
-    public FileInfo[] getUserInvitations() {
+    public FileInfo[] getUserNotifications() {
         
         int numberOfInvitations;
         FileInfo[] files = null;
@@ -499,7 +580,7 @@ public class YetAnotherFileSharingAppClient {
             
             /* Sending the command to the server. */
             lock.lock();
-            String commandType = "getUserInvitations";
+            String commandType = "getUserNotifications";
             serverObjectOutputStream.writeObject(new Command(commandType, null));
             
             /* Receiving number of remote files. */

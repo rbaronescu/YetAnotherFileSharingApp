@@ -83,6 +83,7 @@ public class MainFrame extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         shareFileMnuItm = new javax.swing.JMenuItem();
         kickMnuItm = new javax.swing.JMenuItem();
+        manageTokenMnuItm = new javax.swing.JMenuItem();
         fileChooser = new javax.swing.JFileChooser();
         mainPnl = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -98,8 +99,12 @@ public class MainFrame extends javax.swing.JFrame {
         fileMnu = new javax.swing.JMenu();
         newFileMnuItm = new javax.swing.JMenuItem();
         uploadFileMnuItm = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         exitMnuItm = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        editMnu = new javax.swing.JMenu();
+        shareFileMnuBarItm = new javax.swing.JMenuItem();
+        kickMnuBarItm = new javax.swing.JMenuItem();
+        manageTokenMnuBarItm = new javax.swing.JMenuItem();
 
         openFileMnuItm.setText("Open File");
         openFileMnuItm.addActionListener(new java.awt.event.ActionListener() {
@@ -133,6 +138,14 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         listFilesPopUpMnu.add(kickMnuItm);
+
+        manageTokenMnuItm.setText("Manage Token");
+        manageTokenMnuItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageTokenMnuItmActionPerformed(evt);
+            }
+        });
+        listFilesPopUpMnu.add(manageTokenMnuItm);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("YetAnotherFileSharingApp");
@@ -226,6 +239,7 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         fileMnu.add(uploadFileMnuItm);
+        fileMnu.add(jSeparator2);
 
         exitMnuItm.setText("Exit");
         exitMnuItm.addActionListener(new java.awt.event.ActionListener() {
@@ -237,8 +251,44 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuBar1.add(fileMnu);
 
-        jMenu2.setText("Edit");
-        jMenuBar1.add(jMenu2);
+        editMnu.setText("Edit");
+        editMnu.addMenuListener(new javax.swing.event.MenuListener() {
+            public void menuCanceled(javax.swing.event.MenuEvent evt) {
+            }
+            public void menuDeselected(javax.swing.event.MenuEvent evt) {
+            }
+            public void menuSelected(javax.swing.event.MenuEvent evt) {
+                editMnuMenuSelected(evt);
+            }
+        });
+
+        shareFileMnuBarItm.setText("Share File With...");
+        shareFileMnuBarItm.setEnabled(false);
+        shareFileMnuBarItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                shareFileMnuBarItmActionPerformed(evt);
+            }
+        });
+        editMnu.add(shareFileMnuBarItm);
+
+        kickMnuBarItm.setText("Kick From File...");
+        kickMnuBarItm.setEnabled(false);
+        kickMnuBarItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                kickMnuBarItmActionPerformed(evt);
+            }
+        });
+        editMnu.add(kickMnuBarItm);
+
+        manageTokenMnuBarItm.setText("Manage Token");
+        manageTokenMnuBarItm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageTokenMnuBarItmActionPerformed(evt);
+            }
+        });
+        editMnu.add(manageTokenMnuBarItm);
+
+        jMenuBar1.add(editMnu);
 
         setJMenuBar(jMenuBar1);
 
@@ -272,9 +322,13 @@ public class MainFrame extends javax.swing.JFrame {
         String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
         String fileOwner = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 1);
         
-        if (!clientInstance.editRemoteFile(fileName, fileOwner)) {
+        int ret = clientInstance.editRemoteFile(fileName, fileOwner);
+        if (ret == YetAnotherFileSharingAppClient.FILE_NOT_FOUND) {
             JOptionPane.showMessageDialog(new JFrame(), "Remote file could not be openend!", "Error!",
                     JOptionPane.ERROR_MESSAGE);
+        } else if (ret == YetAnotherFileSharingAppClient.USER_DO_NOT_HOLD_TOKEN) {
+            JOptionPane.showMessageDialog(new JFrame(), "Any changes made to the file were not saved, you do not "
+                    + "hold the token!", "Information!", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_openFileMnuItmActionPerformed
 
@@ -342,10 +396,14 @@ public class MainFrame extends javax.swing.JFrame {
 
         String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
         String fileOwner = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 1);
-        if (!clientInstance.editRemoteFile(fileName, fileOwner)) {
+        int ret = clientInstance.editRemoteFile(fileName, fileOwner);
+        if (ret == YetAnotherFileSharingAppClient.FILE_NOT_FOUND) {
             JOptionPane.showMessageDialog(new JFrame(), "Remote file could not be opened!", "Error!",
                 JOptionPane.ERROR_MESSAGE);
-        }        
+        } else if (ret == YetAnotherFileSharingAppClient.USER_DO_NOT_HOLD_TOKEN) {
+            JOptionPane.showMessageDialog(new JFrame(), "Any changes made to the file were not saved, you do not "
+                    + "hold the token!", "Information!", JOptionPane.INFORMATION_MESSAGE);
+        }      
     }//GEN-LAST:event_remoteFilesTblMouseClicked
 
     private void remoteFilesTblMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remoteFilesTblMouseReleased
@@ -379,28 +437,69 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void kickMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kickMnuItmActionPerformed
         String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
-        (new KickUserFrame(this, fileName, clientInstance)).setVisible(true);
+        new KickUserFrame(this, fileName, clientInstance);
         this.setEnabled(false);
     }//GEN-LAST:event_kickMnuItmActionPerformed
 
+    private void shareFileMnuBarItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shareFileMnuBarItmActionPerformed
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
+        (new ShareFileFrame(this, fileName, clientInstance)).setVisible(true);
+        this.setEnabled(false);
+    }//GEN-LAST:event_shareFileMnuBarItmActionPerformed
+
+    private void kickMnuBarItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kickMnuBarItmActionPerformed
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
+        new KickUserFrame(this, fileName, clientInstance);
+        this.setEnabled(false);
+    }//GEN-LAST:event_kickMnuBarItmActionPerformed
+
+    private void editMnuMenuSelected(javax.swing.event.MenuEvent evt) {//GEN-FIRST:event_editMnuMenuSelected
+        if (remoteFilesTbl.getSelectedRow() >= 0) {
+            shareFileMnuBarItm.setEnabled(true);
+            kickMnuBarItm.setEnabled(true);
+            manageTokenMnuBarItm.setEnabled(true);
+        } else {
+            shareFileMnuBarItm.setEnabled(false);
+            kickMnuBarItm.setEnabled(false);
+            manageTokenMnuBarItm.setEnabled(false);
+        }
+    }//GEN-LAST:event_editMnuMenuSelected
+
+    private void manageTokenMnuItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageTokenMnuItmActionPerformed
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
+        new ManageTokenFrame(this, fileName, clientInstance);
+        this.setEnabled(false);
+    }//GEN-LAST:event_manageTokenMnuItmActionPerformed
+
+    private void manageTokenMnuBarItmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageTokenMnuBarItmActionPerformed
+        String fileName = (String) remoteFilesTblModel.getValueAt(remoteFilesTbl.getSelectedRow(), 0);
+        new ManageTokenFrame(this, fileName, clientInstance);
+        this.setEnabled(false);
+    }//GEN-LAST:event_manageTokenMnuBarItmActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem deleteFileMnuItm;
+    private javax.swing.JMenu editMnu;
     private javax.swing.JMenuItem exitMnuItm;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMnu;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JMenuItem kickMnuBarItm;
     private javax.swing.JMenuItem kickMnuItm;
     private javax.swing.JPopupMenu listFilesPopUpMnu;
     private javax.swing.JLabel loginInfoLbl;
     private javax.swing.JPanel mainPnl;
+    private javax.swing.JMenuItem manageTokenMnuBarItm;
+    private javax.swing.JMenuItem manageTokenMnuItm;
     private javax.swing.JMenuItem newFileMnuItm;
     private javax.swing.JButton notificationsBtn;
     private javax.swing.JMenuItem openFileMnuItm;
     private javax.swing.JTable remoteFilesTbl;
+    private javax.swing.JMenuItem shareFileMnuBarItm;
     private javax.swing.JMenuItem shareFileMnuItm;
     private javax.swing.JMenuItem uploadFileMnuItm;
     // End of variables declaration//GEN-END:variables

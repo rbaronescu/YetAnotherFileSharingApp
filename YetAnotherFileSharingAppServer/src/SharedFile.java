@@ -2,9 +2,7 @@
  * YetAnotherFileSharingAppServer - The server side.
  */
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,12 +11,11 @@ import java.util.logging.Logger;
 
 import backend.FileInfo;
 
-public class SharedFile {
+public class SharedFile implements Serializable {
 
-    private static final String DATA_ROOT_PATH = "data";
-    static private final String SHARED_FILES_CSV_FILE_PATH = DATA_ROOT_PATH + "/sharedFiles.csv";
     static private List<SharedFile> sharedFiles = Collections.synchronizedList(new ArrayList<SharedFile>());
     static private List<SharedFile> sharedFileInvites = Collections.synchronizedList(new ArrayList<SharedFile>());
+    static private List<SharedFile> sharedFileKicks = Collections.synchronizedList(new ArrayList<SharedFile>());
 
     private String fileName;
     private String owner;
@@ -38,6 +35,10 @@ public class SharedFile {
 
     public void addReadUser(String readUser) {
         readUsers.add(readUser);
+    }
+
+    public void removeReadUser(String readUser) {
+        readUsers.remove(readUser);
     }
 
     public String getFileName() {
@@ -64,29 +65,78 @@ public class SharedFile {
         return username.equals(tokenHolder);
     }
 
-    public static void fillSharedFilesList() {
+    public void setTokenHolder(String newTokenHolder) {
+        this.tokenHolder = newTokenHolder;
+    }
 
-        BufferedReader br;
-        String line, splitter = ",";
+    public static void loadSerializedSharedFiles(String filePath) {
+        loadSerializedDataToList(sharedFiles, filePath);
+    }
+
+    public static void loadSerializedInvites(String filePath) {
+        loadSerializedDataToList(sharedFileInvites, filePath);
+    }
+
+    public static void loadSerializedKicks(String filePath) {
+        loadSerializedDataToList(sharedFileKicks, filePath);
+    }
+
+    public static void loadSerializedDataToList(List<SharedFile> list, String filePath) {
+
+        FileInputStream fis;
+        ObjectInputStream objectInputStream;
 
         try {
 
-            br = new BufferedReader(new FileReader(SHARED_FILES_CSV_FILE_PATH));
-            while ((line = br.readLine()) != null) {
+            fis = new FileInputStream(filePath);
+            objectInputStream = new ObjectInputStream(fis);
 
-                String[] tokens = line.split(splitter);
-                SharedFile sharedFile = new SharedFile(tokens[0], tokens[1], tokens[2]);
-
-                for (int i = 3; i < tokens.length; i++) {
-                    sharedFile.addReadUser(tokens[i]);
-                }
-
-                /* Adding this new Shared File to the list. */
-                addNewSharedFile(sharedFile);
+            while (fis.available() != -1) {
+                SharedFile sf = (SharedFile) objectInputStream.readObject();
+                list.add(sf);
             }
 
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
-            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void serializeSharedFilesToBinaryFile(String filePath) {
+        serializeListToBinaryFile(sharedFiles, filePath);
+    }
+
+    public static void serializeInvitessToBinaryFile(String filePath) {
+        serializeListToBinaryFile(sharedFileInvites, filePath);
+    }
+
+    public static void serializeKicksToBinaryFile(String filePath) {
+        serializeListToBinaryFile(sharedFileKicks, filePath);
+    }
+
+    public static void serializeListToBinaryFile(List<SharedFile> list, String filePath) {
+
+        FileOutputStream fos;
+        ObjectOutputStream objectOutputStream;
+
+        try {
+
+            fos = new FileOutputStream(filePath);
+            objectOutputStream = new ObjectOutputStream(fos);
+
+            for (SharedFile sf : list) {
+                objectOutputStream.writeObject(sf);
+                objectOutputStream.reset();
+            }
+            objectOutputStream.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -96,6 +146,10 @@ public class SharedFile {
 
     public static void addSharedFileInvite(SharedFile sharedFile) {
         sharedFileInvites.add(sharedFile);
+    }
+
+    public static void addSharedFileKick(SharedFile sharedFile) {
+        sharedFileKicks.add(sharedFile);
     }
 
     public static boolean isShared(FileInfo fileInfo) {
@@ -133,6 +187,24 @@ public class SharedFile {
         }
 
         return null;
+    }
+
+    public static boolean removeUserInvite(FileInfo fileInfo, String username) {
+
+        boolean booleanRet = false;
+        SharedFile invite = new SharedFile(fileInfo.getFileName(), fileInfo.getOwner());
+
+        invite.addReadUser(username);
+        if (sharedFileInvites.contains(sharedFileInvites)) {
+            sharedFileInvites.remove(invite);
+            booleanRet = true;
+        }
+
+        return booleanRet;
+    }
+
+    public static void removeUserKick(SharedFile sharedFile) {
+        sharedFileKicks.remove(sharedFile);
     }
 
     public static void acceptInvite(SharedFile invite) {
@@ -179,4 +251,19 @@ public class SharedFile {
 
         return userInvites;
     }
+
+    public static ArrayList<SharedFile> getUserKicks(String username) {
+
+        ArrayList<SharedFile> userKicks = new ArrayList<>();
+
+        for (SharedFile sharedFileKick : sharedFileKicks) {
+            if (sharedFileKick.isSharedWith(username)) {
+                userKicks.add(sharedFileKick);
+            }
+        }
+
+        return userKicks;
+    }
+
+
 }

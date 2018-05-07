@@ -104,10 +104,16 @@ public class NewConnectionHandler extends Thread {
             shareFileWith(userCommand);
         } else if (userCommand.isCheckForNotifications()) {
             checkForNotification();
-        } else if (userCommand.isGetUserInvtitations()) {
-            sendUserInvtitations();
+        } else if (userCommand.isGetUserNotifications()) {
+            sendUserNotifications();
         } else if (userCommand.isRespondToNotification()) {
             processResponseToNotification(userCommand);
+        } else if (userCommand.isgetListOfUsersWithAccessTo()) {
+            sendListOfUsersWithAccessTo(userCommand);
+        } else if (userCommand.isKickUserFrom()) {
+            kickUserFrom(userCommand);
+        } else if (userCommand.isChangeTokenHolder()) {
+            changeTokenHolder(userCommand);
         }
     }
 
@@ -370,7 +376,7 @@ public class NewConnectionHandler extends Thread {
         }
     }
 
-    /* It sends list of users that doesn't or does share a specified file. */
+    /* It sends list of users that doesn't share a specified file. */
     private void sendListOfUsers(Command command) {
 
         BufferedReader br = null;
@@ -399,6 +405,66 @@ public class NewConnectionHandler extends Thread {
             for (String userName : users) {
                 clientObjectOutputStream.writeObject(userName);
             }
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    /* It sends list of users that doesn't or does share a specified file. */
+    private void sendListOfUsersWithAccessTo(Command command) {
+
+        BufferedReader br = null;
+        String line = "";
+        String splitter = ",";
+        ArrayList<String> users = new ArrayList<>();
+        String toExclude = username;
+
+        FileInfo fileInfo = new FileInfo(command.getArgument(0), username, "");
+        SharedFile sharedFile = SharedFile.getSharedFile(fileInfo);
+        if (sharedFile == null) {
+            sharedFile = new SharedFile("", "");
+        }
+
+        System.out.println(sharedFile.getTokenHolder());
+        if (command.getArgument(1).equals("yes") && !sharedFile.getTokenHolder().isEmpty()) {
+            toExclude = sharedFile.getTokenHolder();
+        }
+
+        try {
+
+            br = new BufferedReader(new FileReader(USERS_CSV_FILE_PATH));
+            while ((line = br.readLine()) != null) {
+                String[] userInfo = line.split(splitter);
+                if (!userInfo[0].equals(toExclude) && ((sharedFile.isSharedWith(userInfo[0]) || sharedFile.hasOwner(userInfo[0])) || (SharedFile.getUserInvite(fileInfo, userInfo[0]) != null) && !command.getArgument(1).equals("yes"))) {
+                    users.add(userInfo[0]);
+                }
+            }
+
+            /* Sending list size. */
+            clientObjectOutputStream.writeObject(String.valueOf(users.size()));
+            for (String userName : users) {
+                clientObjectOutputStream.writeObject(userName);
+            }
+        } catch (IOException e) {
+            Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void changeTokenHolder(Command command) {
+
+        FileInfo fileInfo = new FileInfo(command.getArgument(0), username, "");
+        SharedFile sharedFile = SharedFile.getSharedFile(fileInfo);
+        String response = "";
+
+        if (sharedFile != null) {
+            sharedFile.setTokenHolder(command.getArgument(1));
+            response = "success";
+        } else {
+            response = "fail";
+        }
+
+        try {
+            clientObjectOutputStream.writeObject(response);
         } catch (IOException e) {
             Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -440,10 +506,32 @@ public class NewConnectionHandler extends Thread {
         }
     }
 
+    private void kickUserFrom(Command command) {
+
+        FileInfo fileInfo = new FileInfo(command.getArgument(0), username, "", "kick");
+        SharedFile sharedFile = SharedFile.getSharedFile(fileInfo);
+
+        if (sharedFile != null) {
+            sharedFile.removeReadUser(command.getArgument(1));
+            SharedFile sf = new SharedFile(sharedFile.getFileName(), sharedFile.getOwner());
+            sf.addReadUser(command.getArgument(1));
+            SharedFile.addSharedFileKick(sf);
+        }
+
+        if (SharedFile.removeUserInvite(fileInfo, username)) {
+            SharedFile.addSharedFileKick(sharedFile);
+            SharedFile sf = new SharedFile(sharedFile.getFileName(), sharedFile.getOwner());
+            sf.addReadUser(command.getArgument(1));
+            SharedFile.addSharedFileKick(sf);
+        }
+    }
+
     private void checkForNotification() {
 
         try {
             if (!SharedFile.getUserInvites(username).isEmpty()) {
+                clientObjectOutputStream.writeObject("yes");
+            } else if (!SharedFile.getUserKicks(username).isEmpty()) {
                 clientObjectOutputStream.writeObject("yes");
             } else {
                 clientObjectOutputStream.writeObject("no");
@@ -453,18 +541,25 @@ public class NewConnectionHandler extends Thread {
         }
     }
 
-    private void sendUserInvtitations() {
+    private void sendUserNotifications() {
 
 
         ArrayList<SharedFile> invitations = SharedFile.getUserInvites(username);
+        ArrayList<SharedFile> kicks = SharedFile.getUserKicks(username);
 
         try {
             /* Sending list size. */
-            clientObjectOutputStream.writeObject(String.valueOf(invitations.size()));
+            clientObjectOutputStream.writeObject(String.valueOf(invitations.size() + kicks.size()));
             for (SharedFile sharedFile : invitations) {
                 clientObjectOutputStream.writeObject(
-                        new FileInfo(sharedFile.getFileName(), sharedFile.getOwner(), "")
+                        new FileInfo(sharedFile.getFileName(), sharedFile.getOwner(), "", "invite")
                 );
+            }
+            for (SharedFile sharedFile : kicks) {
+                clientObjectOutputStream.writeObject(
+                        new FileInfo(sharedFile.getFileName(), sharedFile.getOwner(), "", "kick")
+                );
+                SharedFile.removeUserKick(sharedFile);
             }
         } catch (IOException e) {
             Logger.getLogger(YetAnotherFileSharingAppServer.class.getName()).log(Level.SEVERE, null, e);

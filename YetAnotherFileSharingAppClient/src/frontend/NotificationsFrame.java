@@ -34,18 +34,28 @@ public class NotificationsFrame extends javax.swing.JFrame {
         this.clientInstance = clientInstance;
         this.notificationsTblModel = (DefaultTableModel) notificationsTbl.getModel();
         
+        acceptBtn.setEnabled(false);
+        declineBtn.setEnabled(false);
         updateTableOfNotifications();
     }
     
     private void updateTableOfNotifications() {
 
-        FileInfo[] invitations = clientInstance.getUserInvitations();
+        FileInfo[] notifications = clientInstance.getUserNotifications();
 
         notificationsTblModel.setRowCount(0);
-        for (FileInfo fileInfo : invitations) {
+        for (FileInfo fileInfo : notifications) {
+            
+            String notif = "no notification";
+            if (fileInfo.isInvite()) {
+                notif = fileInfo.getOwner() + " invites you to collaborate to " + fileInfo.getFileName();
+            } else if (fileInfo.isKick()) {
+                notif = fileInfo.getOwner() + " kicked you out from " + fileInfo.getFileName();
+            }
+            
             notificationsTblModel.addRow(new Object[]
             {
-                fileInfo.getOwner() + " invites you to collaborate to " + fileInfo.getFileName()
+                notif
             });
         }
         
@@ -95,6 +105,11 @@ public class NotificationsFrame extends javax.swing.JFrame {
                 "Notification"
             }
         ));
+        notificationsTbl.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                notificationsTblMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(notificationsTbl);
 
         acceptBtn.setText("Accept");
@@ -211,6 +226,18 @@ public class NotificationsFrame extends javax.swing.JFrame {
     private void formPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_formPropertyChange
 
     }//GEN-LAST:event_formPropertyChange
+
+    private void notificationsTblMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_notificationsTblMouseClicked
+        String notification = (String) notificationsTblModel.getValueAt(notificationsTbl.getSelectedRow(), 0);
+        String[] tokens = notification.split(" ");
+        if (tokens[1].equals("invites")) {
+            acceptBtn.setEnabled(true);
+            declineBtn.setEnabled(true);
+        } else {
+            acceptBtn.setEnabled(false);
+            declineBtn.setEnabled(false);
+        }
+    }//GEN-LAST:event_notificationsTblMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton acceptBtn;

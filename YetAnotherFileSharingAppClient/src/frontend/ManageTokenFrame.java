@@ -14,7 +14,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author baronesc
  */
-public class KickUserFrame extends javax.swing.JFrame {
+public class ManageTokenFrame extends javax.swing.JFrame {
     
     private final JFrame parent;
     private final String fileName;
@@ -23,12 +23,12 @@ public class KickUserFrame extends javax.swing.JFrame {
     private String[] users;
 
     /**
-     * Creates new form ShareFileFrame
+     * Creates new form ManageTokenFrame
      * @param parent
      * @param fileName
      * @param clientInstance
      */
-    public KickUserFrame(JFrame parent, String fileName, YetAnotherFileSharingAppClient clientInstance) {
+    public ManageTokenFrame(JFrame parent, String fileName, YetAnotherFileSharingAppClient clientInstance) {
         
         initComponents();
         
@@ -38,12 +38,12 @@ public class KickUserFrame extends javax.swing.JFrame {
         this.usersTblModel = (DefaultTableModel) usersTbl.getModel();
         
         updateTableOfUsers();
-        kickUserFilenameLbl.setText("Kick user from \"" + fileName + "\":");
+        manageTokenFilenameLbl.setText("Manage token holder for \"" + fileName + "\":");
     }
     
     private void updateTableOfUsers() {
         
-        users = clientInstance.getListOfUsersWithAccessTo(fileName, "no");
+        users = clientInstance.getListOfUsersWithAccessTo(fileName, "yes");
         
         if (users.length == 0) {
             JOptionPane.showMessageDialog(new JFrame(), "This file is not shared with anyone!", "Error!",
@@ -77,12 +77,12 @@ public class KickUserFrame extends javax.swing.JFrame {
                 return false;
             }
         };
-        kickUserFilenameLbl = new javax.swing.JLabel();
+        manageTokenFilenameLbl = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         userPrefixTxt = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("YetAnotherFileSharingApp");
+        setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
@@ -104,7 +104,7 @@ public class KickUserFrame extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(usersTbl);
 
-        kickUserFilenameLbl.setText("Kick user from \"filename\":");
+        manageTokenFilenameLbl.setText("Manage token for \"filename\":");
 
         jLabel2.setText("Filter useres by name:");
 
@@ -128,7 +128,7 @@ public class KickUserFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(kickUserFilenameLbl)
+                        .addComponent(manageTokenFilenameLbl)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel2)
@@ -140,7 +140,7 @@ public class KickUserFrame extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(kickUserFilenameLbl)
+                .addComponent(manageTokenFilenameLbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -171,13 +171,8 @@ public class KickUserFrame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        parent.setEnabled(true);
-        parent.toFront();
-    }//GEN-LAST:event_formWindowClosed
-
     private void usersTblMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_usersTblMouseClicked
-        
+
         if (evt.getClickCount() < 2) {
             return;
         }
@@ -187,19 +182,20 @@ public class KickUserFrame extends javax.swing.JFrame {
         }
 
         String username = (String) usersTblModel.getValueAt(usersTbl.getSelectedRow(), 0);
-        clientInstance.KickUserFrom(fileName, username);
-        JOptionPane.showMessageDialog(new JFrame(), "User kicked out!", "Information!", JOptionPane.INFORMATION_MESSAGE);
+        if (clientInstance.changeTokenHolder(fileName, username)) {
+            JOptionPane.showMessageDialog(new JFrame(), "Token Holder updated!", "Information!",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+             JOptionPane.showMessageDialog(new JFrame(), "Failed to update Token Holder!", "Error!",
+                    JOptionPane.ERROR_MESSAGE);
+        }
         this.dispose();
     }//GEN-LAST:event_usersTblMouseClicked
 
-    private void userPrefixTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userPrefixTxtActionPerformed
-
-    }//GEN-LAST:event_userPrefixTxtActionPerformed
-
     private void userPrefixTxtCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_userPrefixTxtCaretUpdate
-        
+
         String prefix = userPrefixTxt.getText();
-        
+
         usersTblModel.setRowCount(0);
         for (String username : users) {
             if (prefix.isEmpty()) {
@@ -216,11 +212,20 @@ public class KickUserFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_userPrefixTxtCaretUpdate
 
+    private void userPrefixTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userPrefixTxtActionPerformed
+
+    }//GEN-LAST:event_userPrefixTxtActionPerformed
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        parent.setEnabled(true);
+        parent.toFront();
+    }//GEN-LAST:event_formWindowClosed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel kickUserFilenameLbl;
+    private javax.swing.JLabel manageTokenFilenameLbl;
     private javax.swing.JTextField userPrefixTxt;
     private javax.swing.JTable usersTbl;
     // End of variables declaration//GEN-END:variables

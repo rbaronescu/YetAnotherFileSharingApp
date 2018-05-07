@@ -1,0 +1,9 @@
+sdsdCurs 8 - SO2
+
+ZONE_HIGHMEM = high memory, which are pages not permanently mapped intro kernel's address space.
+
+In NUMA Systems, Linux imparte memoria reala in "noduri", memory nodes, intr-un nod timpul de acces la memorie este acelasi, dar in noduri diferite, timpul de acces difera.
+
+Stored objects in SLAB layer can be colored to prevent multiple objects from mapping to the same cache lines. Practic daca un modul are nevioe de un obiect si alt mdoul de un alt obiect de acelasi timp, daca obiectele sunt in acelasi cache line, prcatic cand un modul incarca citeste obiectul sau din memorie, se incarca si celalalt obiect in cache, dar nu are rost sa se incarce.
+
+Ala balad
