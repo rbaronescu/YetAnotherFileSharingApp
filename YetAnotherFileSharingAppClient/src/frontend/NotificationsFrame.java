@@ -79,7 +79,11 @@ public class NotificationsFrame extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        notificationsTbl = new javax.swing.JTable();
+        notificationsTbl = new javax.swing.JTable() {
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        };
         acceptBtn = new javax.swing.JButton();
         declineBtn = new javax.swing.JButton();
         numberOfNotificationsLbl = new javax.swing.JLabel();
